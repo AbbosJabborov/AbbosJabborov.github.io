@@ -79,8 +79,8 @@ function resizeCanvas() {
 
 function drawOverlay() {
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, '#ff0057');
-  gradient.addColorStop(1, '#4b00ff');
+  gradient.addColorStop(0, '#606c38');
+  gradient.addColorStop(1, '#dda15e');
   ctx.globalCompositeOperation = 'source-over'; // normal paint mode
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
