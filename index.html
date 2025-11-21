@@ -1,11 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal</title>
+    <meta charset="UTF-8" />
+    <title>Game Shelf</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <a href="2048/index.html">Load 2048 Game</a>
+
+<div class="title">My Game Shelf</div>
+
+<div class="shelf-container">
+
+    <div class="shelf">
+        <div class="game-card" onclick="openGame('2048')">
+            <img src="assets/thumbnail-2048.png">
+            <span>2048</span>
+        </div>
+    </div>
+
+    <div class="shelf">
+        <div class="game-card" onclick="openGame('snakey-bakey')">
+            <img src="assets/thumbnail-snakey.png">
+            <span>Snakey Bakey</span>
+        </div>
+    </div>
+
+    <div class="shelf">
+        <div class="game-card" onclick="openGame('jam-project')">
+            <img src="assets/thumbnail-jam.png">
+            <span>Jam Project</span>
+        </div>
+    </div>
+
+</div>
+
+<script src="js/main.js"></script>
+
 </body>
 </html>
