@@ -18,9 +18,7 @@ SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_NOW_PLAYING_URL = "https://api.spotify.com/v1/me/player/currently-playing"
 
-REDIRECT_URI = (
-    "https://unconverging-daxton-pedagogically.ngrok-free.dev/api/spotify/callback/"
-)
+REDIRECT_URI = "https://abbosjabborov-github-io.onrender.com/api/spotify/callback/"
 SCOPES = "user-read-currently-playing user-read-playback-state"
 
 
