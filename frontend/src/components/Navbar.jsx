@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import API_BASE_URL from "../config/api";
 
 export default function Navbar() {
   const [track, setTrack] = useState(null);
@@ -9,17 +10,21 @@ export default function Navbar() {
 
     async function fetchNowPlaying() {
       try {
-        const res = await fetch("/api/spotify/currently-playing/");
+        const res = await fetch(
+          `${API_BASE_URL}/api/spotify/currently-playing/`,
+        );
+
         if (!res.ok) return;
+
         const data = await res.json();
         setTrack(data);
       } catch (e) {
-        console.warn("Spotify fetch failed");
+        console.warn("Spotify fetch failed", e);
       }
     }
 
     fetchNowPlaying();
-    timer = setInterval(fetchNowPlaying, 30000); // 30s
+    timer = setInterval(fetchNowPlaying, 30000);
 
     return () => clearInterval(timer);
   }, []);
@@ -33,7 +38,11 @@ export default function Navbar() {
         <Link to="/">Projects</Link>
         <Link to="/notes">Notes</Link>
         <Link to="/posts">Posts</Link>
-        <a href="https://github.com/AbbosJabborov" target="_blank">
+        <a
+          href="https://github.com/AbbosJabborov"
+          target="_blank"
+          rel="noreferrer"
+        >
           GitHub
         </a>
       </div>
