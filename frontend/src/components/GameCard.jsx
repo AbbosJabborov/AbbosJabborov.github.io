@@ -1,14 +1,21 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function GameCard({ game, onSelect }) {
-  const fallbackThumbnail =
-    "https://compote.slate.com/images/22ce4663-4205-4345-8489-bc914da1f272.jpeg?crop=1560%2C1040%2Cx0%2Cy0";
+export default function GameCard({ game }) {
+  const nav = useNavigate();
+  const thumbnail = game.cover;
 
-  const thumbnail = game.thumbnail || fallbackThumbnail;
+  function open() {
+    nav(`/project/${game.id}`);
+  }
 
   return (
-    <div className="game-card" onClick={() => onSelect(game)}>
-      <img src={thumbnail} alt={game.title} />
+    <div className="game-card" onClick={open}>
+      {thumbnail ? (
+        <img src={thumbnail} alt={game.title} />
+      ) : (
+        <div className="no-cover">No Image</div>
+      )}
       <div className="game-title">{game.title}</div>
     </div>
   );

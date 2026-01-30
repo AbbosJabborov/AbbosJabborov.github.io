@@ -8,5 +8,6 @@ export default defineConfig({
     proxy: {
       "/api": "http://localhost:8000",
     },
+    allowedHosts: ["unconverging-daxton-pedagogically.ngrok-free.dev"],
   },
 });
