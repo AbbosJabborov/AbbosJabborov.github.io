@@ -7,7 +7,7 @@ export default defineConfig({
   base: "/",
   server: {
     proxy: {
-      "/api": "https://abbosjabborov.io.onrender.com",
+      "/api": "https://abbosjabborov-github-io.onrender.com/",
     },
     allowedHosts: ["unconverging-daxton-pedagogically.ngrok-free.dev"],
   },
