@@ -92,7 +92,7 @@ export default function Navbar() {
         <Link to="/" className="brand">
           claive
         </Link>
-        <Link to="/">projects</Link>
+        <Link to="/projects">projects</Link>
         <Link to="/notes">notes</Link>
         <Link to="/posts">posts</Link>
         <a

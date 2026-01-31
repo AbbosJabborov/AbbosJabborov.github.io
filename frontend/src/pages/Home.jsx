@@ -32,7 +32,7 @@ export default function Home() {
             <li>
               *even see what i am{" "}
               <a
-                href="https://open.spotify.com"
+                href="https://open.spotify.com/user/313tv3lpxnwpjfrmclgff7swdzua"
                 target="_blank"
                 rel="noreferrer"
                 className="link-highlight"
