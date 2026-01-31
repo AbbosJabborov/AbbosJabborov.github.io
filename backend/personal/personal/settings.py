@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,16 +31,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "unconverging-daxton-pedagogically.ngrok-free.dev",
-    "127.0.0.1",
-    "localhost",
-    ".onrender.com",
-    "abbosjabborov.github.io",
-]
-
-
-# Application definition
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
 INSTALLED_APPS = [
     "corsheaders",
@@ -104,6 +96,7 @@ DATABASES = {
     }
 }
 
+DATABASES["default"] = dj_database_url.parse(os.getenv("DATABASE_URL"))
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

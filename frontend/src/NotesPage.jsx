@@ -25,7 +25,7 @@ export default function NotesPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const res = await fetch("/api/notes/", {
+      const res = await fetch(`${API_BASE_URL}/api/notes/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

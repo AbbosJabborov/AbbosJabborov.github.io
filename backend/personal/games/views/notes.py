@@ -1,4 +1,3 @@
-# views/notes.py
 import random
 
 from django.utils import timezone
@@ -10,7 +9,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 
-# views/notes.py
 @api_view(["GET", "POST"])
 @permission_classes([AllowAny])
 def notes_list(request):
