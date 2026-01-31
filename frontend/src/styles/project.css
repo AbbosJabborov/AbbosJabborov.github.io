@@ -1,113 +1,95 @@
-/* project.css - import from App.jsx */
-
 .project-page {
-    max-width: 1100px;
-    margin: 28px auto;
-    padding: 18px;
-    color: #eee;
-    font-family: Arial, sans-serif;
-}
-
-.project-hero {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 20px;
-    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
+    min-height: calc(100vh - 73px);
 }
 
 .back-btn {
     background: transparent;
-    color: #bbb;
+    color: #949e9e;
     border: none;
-    cursor: pointer;
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: 1rem;
+    margin-bottom: 30px;
+    padding: 8px 0;
+    transition: color 0.2s ease;
+    text-transform: lowercase;
+}
+
+.back-btn:hover {
+    color: #c9cfcf;
+}
+
+/* Hero Section */
+.project-hero {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    align-items: start;
+    margin-bottom: 50px;
 }
 
 .project-meta {
-    background: rgba(255, 255, 255, 0.02);
-    padding: 18px;
-    border-radius: 12px;
+    background: rgba(48, 54, 54, 0.3);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid rgba(201, 207, 207, 0.1);
 }
 
 .project-title {
-    margin: 0 0 8px 0;
-    font-size: 28px;
-    color: #fff;
+    margin: 0 0 20px 0;
+    font-size: 3rem;
+    color: #e4e7e7;
+    font-weight: 400;
+    text-transform: lowercase;
+    letter-spacing: 1px;
 }
 
 .badge {
     display: inline-block;
-    background: #255b3a;
-    color: #dfffe7;
-    font-weight: 700;
-    padding: 6px 10px;
-    border-radius: 8px;
-    margin-bottom: 12px;
+    background: rgba(121, 134, 134, 0.3);
+    color: #c9cfcf;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(121, 134, 134, 0.4);
+    text-transform: lowercase;
+    font-size: 0.9rem;
 }
 
 .project-desc {
-    color: #cfcfcf;
-    line-height: 1.45;
+    color: #c9cfcf;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    margin-top: 20px;
 }
 
-.project-actions {
-    margin-top: 12px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.btn {
-    background: rgba(255, 255, 255, 0.03);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-}
-.btn.primary {
-    background: linear-gradient(180deg, #4f6781, #3b4e65);
-    border: none;
-}
-
-/* cover */
+/* Cover Image */
 .project-cover img {
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
     display: block;
     object-fit: cover;
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(201, 207, 207, 0.1);
 }
 
-.no-cover {
-    width: 320px;
-    height: 180px;
-    background: #222;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #777;
-    border-radius: 10px;
-}
-
-/* embed area */
+/* Embed Section */
 .project-embed-section {
-    margin-top: 28px;
+    margin-top: 50px;
 }
 
 .embed-container {
     width: 100%;
-    /* make embedded iframe responsive */
     aspect-ratio: 16 / 9;
     overflow: hidden;
     background: #000;
-    border-radius: 10px;
+    border-radius: 16px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(201, 207, 207, 0.1);
 }
 
-/* ensure iframe inside fit */
 .embed-container iframe {
     width: 100%;
     height: 100%;
@@ -115,18 +97,68 @@
     display: block;
 }
 
-/* small screens */
+.no-embed {
+    padding: 80px 40px;
+    text-align: center;
+    background: rgba(48, 54, 54, 0.2);
+    border-radius: 16px;
+    border: 1px solid rgba(201, 207, 207, 0.1);
+}
+
+.no-embed p {
+    color: #949e9e;
+    font-size: 1.1rem;
+    text-transform: lowercase;
+}
+
+/* Responsive */
 @media (max-width: 900px) {
+    .project-page {
+        padding: 30px 24px;
+    }
+
     .project-hero {
         grid-template-columns: 1fr;
+        gap: 30px;
     }
-    .project-cover img,
-    .no-cover {
+
+    .project-title {
+        font-size: 2.5rem;
+    }
+
+    .project-cover img {
         width: 100%;
         height: auto;
     }
+
     .embed-container {
         aspect-ratio: auto;
-        height: 360px;
+        height: 400px;
+    }
+}
+
+@media (max-width: 600px) {
+    .project-page {
+        padding: 24px 20px;
+    }
+
+    .project-meta {
+        padding: 24px;
+    }
+
+    .project-title {
+        font-size: 2rem;
+    }
+
+    .project-desc {
+        font-size: 1rem;
+    }
+
+    .embed-container {
+        height: 300px;
+    }
+
+    .no-embed {
+        padding: 60px 30px;
     }
 }

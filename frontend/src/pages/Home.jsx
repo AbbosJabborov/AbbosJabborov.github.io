@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchProjects } from "../api/projects";
 import Shelf from "../components/Shelf";
+import TypingAnimation from "../components/TypingAnimation";
 
 export default function Home() {
   const [projects, setProjects] = useState([]);
@@ -20,18 +21,32 @@ export default function Home() {
     load();
   }, []);
 
-  function openProject(project) {
-    // Later: project detail page or external link
-    alert(`Selected project: ${project.title}`);
-  }
-
   if (loading) return <div className="loading">Loading…</div>;
 
   return (
     <div className="home">
-      <h1 className="main-title">Projects</h1>
+      <div className="home-hero">
+        <TypingAnimation />
+        <div className="hero-subtitle">
+          <p>here you can:</p>
+          <p>
+            *try out my publicly open{" "}
+            <span className="highlight">projects</span>
+          </p>
+          <p>
+            *leave <span className="highlight">notes</span>
+          </p>
+          <p>
+            *read my <span className="highlight">posts</span>
+          </p>
+          <p>*even see what i am listening to on spotify at the moment</p>
+        </div>
+      </div>
 
-      <Shelf title="All Projects" items={projects} onSelect={openProject} />
+      <div className="projects-section">
+        <h2 className="section-title">projects</h2>
+        <Shelf items={projects} />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.text import slugify
 
 
 class Game(models.Model):
@@ -11,14 +12,28 @@ class Game(models.Model):
 
 
 class Project(models.Model):
-    slug = models.SlugField(blank=True)
+    slug = models.SlugField(blank=True, unique=True)
     title = models.CharField(max_length=50)
     desc = models.TextField(max_length=300, blank=True)
     cover = models.ImageField(
-        upload_to="images/movie-cover/%Y/%m/%d/", null=True, blank=True
+        upload_to="images/project-cover/%Y/%m/%d/", null=True, blank=True
     )
     is_opensource = models.BooleanField(default=False)
     embed_html = models.TextField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Project.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
 
 
 class Review(models.Model):
@@ -40,9 +55,9 @@ class Post(models.Model):
 class Note(models.Model):
     message = models.TextField(max_length=500)
     sender = models.CharField(max_length=50, blank=True, null=True)
-    position_x = models.FloatField()  # percentage from left
-    position_y = models.FloatField()  # percentage from top
-    color = models.CharField(max_length=7, default="#feff9c")  # sticky note yellow
+    position_x = models.FloatField()
+    position_y = models.FloatField()
+    color = models.CharField(max_length=7, default="#c9cfcf")
     created_at = models.DateTimeField(default=timezone.now)
 
     # Admin response
@@ -54,29 +69,3 @@ class Note(models.Model):
 
     def __str__(self):
         return f"Note by {self.sender or 'Anonymous'} at {self.created_at}"
-
-
-# Enum example commented out for future, maybe for tags?
-# class Topic(models.Model):
-#     FRESHMAN = "FR"
-#     SOPHOMORE = "SO"
-#     JUNIOR = "JR"
-#     SENIOR = "SR"
-#     GRADUATE = "GR"
-#     YEAR_IN_SCHOOL_CHOICES = {
-#         FRESHMAN: "Freshman",
-#         SOPHOMORE: "Sophomore",
-#         JUNIOR: "Junior",
-#         SENIOR: "Senior",
-#         GRADUATE: "Graduate",
-#     }
-#     year_in_school = models.CharField(
-#         max_length=2,
-#         choices=YEAR_IN_SCHOOL_CHOICES,
-#         default=FRESHMAN,
-#     )
-
-#     def is_upperclass(self):
-#         return self.year_in_school in {self.JUNIOR, self.SENIOR}
-
-# laaa la la, whey to go to get my money right, llaaa, la, la,

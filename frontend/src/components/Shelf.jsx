@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import GameCard from "./GameCard";
 
-export default function Shelf({ title, items, onSelect }) {
+export default function Shelf({ items }) {
   const scroller = useRef(null);
 
   useEffect(() => {
@@ -16,46 +16,30 @@ export default function Shelf({ title, items, onSelect }) {
       isDown = true;
       startX = e.pageX || e.touches?.[0]?.pageX;
       scrollLeft = el.scrollLeft;
+      el.style.cursor = "grabbing";
     }
 
     function handleUp() {
       if (!isDown) return;
       isDown = false;
-      snapToNearestCard();
+      el.style.cursor = "grab";
     }
 
     function handleMove(e) {
       if (!isDown) return;
+      e.preventDefault();
       const x = e.pageX || e.touches?.[0]?.pageX;
-      const walk = startX - x;
+      const walk = (startX - x) * 1.5;
       el.scrollLeft = scrollLeft + walk;
-    }
-
-    function snapToNearestCard() {
-      const card = el.children[0];
-      if (!card) return;
-      const cardWidth = card.offsetWidth + 20;
-      const index = Math.round(el.scrollLeft / cardWidth);
-      const target = index * cardWidth;
-
-      el.scrollTo({
-        left: target,
-        behavior: "smooth",
-      });
     }
 
     el.addEventListener("mousedown", handleDown);
     el.addEventListener("touchstart", handleDown, { passive: true });
-
     window.addEventListener("mouseup", handleUp);
     window.addEventListener("touchend", handleUp);
-
     el.addEventListener("mousemove", handleMove);
-    el.addEventListener("touchmove", handleMove, { passive: true });
-
-    el.addEventListener("wheel", (e) => {
-      el.scrollLeft += e.deltaY + e.deltaX;
-    });
+    el.addEventListener("touchmove", handleMove, { passive: false });
+    el.addEventListener("mouseleave", handleUp);
 
     return () => {
       el.removeEventListener("mousedown", handleDown);
@@ -64,17 +48,23 @@ export default function Shelf({ title, items, onSelect }) {
       window.removeEventListener("touchend", handleUp);
       el.removeEventListener("mousemove", handleMove);
       el.removeEventListener("touchmove", handleMove);
+      el.removeEventListener("mouseleave", handleUp);
     };
   }, []);
 
-  return (
-    <section className="shelf-section">
-      <div className="shelf-title">{title}</div>
-      <div className="shelf-scroller" ref={scroller}>
-        {items.map((project) => (
-          <GameCard key={project.id} game={project} onSelect={onSelect} />
-        ))}
+  if (!items || items.length === 0) {
+    return (
+      <div className="shelf-empty">
+        <p>no projects yet</p>
       </div>
-    </section>
+    );
+  }
+
+  return (
+    <div className="shelf-scroller" ref={scroller}>
+      {items.map((project) => (
+        <GameCard key={project.id} game={project} />
+      ))}
+    </div>
   );
 }

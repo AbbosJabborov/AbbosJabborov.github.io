@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from games.models import Game, Post, Project, Review, Note
+from games.models import Game, Note, Post, Project, Review
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -26,12 +26,28 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ["id", "title", "body", "post_date"]
 
+
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = ['id', 'message', 'sender', 'position_x', 'position_y', 
-                  'color', 'created_at', 'admin_reply', 'replied_at']
-        read_only_fields = ['id', 'created_at', 'admin_reply', 'replied_at']
+        fields = [
+            "id",
+            "message",
+            "sender",
+            "position_x",
+            "position_y",
+            "color",
+            "created_at",
+            "admin_reply",
+            "replied_at",
+        ]
+        read_only_fields = ["id", "created_at", "admin_reply", "replied_at"]
+
 
 class AdminReplySerializer(serializers.Serializer):
     admin_reply = serializers.CharField(max_length=500)
+
+
+class NotePositionSerializer(serializers.Serializer):
+    position_x = serializers.FloatField()
+    position_y = serializers.FloatField()

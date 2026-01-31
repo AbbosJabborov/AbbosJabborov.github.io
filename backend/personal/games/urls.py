@@ -7,7 +7,7 @@ urlpatterns = [
     path("games/<pk>/<slug:slug>", games.GameView.as_view(), name="game-view"),
     path("projects/", projects.CreateListProject.as_view(), name="projects"),
     path(
-        "projects/<pk>/<slug:slug>",
+        "projects/<slug:slug>",
         projects.ProjectView.as_view(),
         name="project-view",
     ),
@@ -17,6 +17,7 @@ urlpatterns = [
     path("spotify/login/", spotify.login),
     path("spotify/callback/", spotify.callback),
     path("notes/", notes.notes_list),
+    path("notes/<int:note_id>/position/", notes.update_note_position),
     path("notes/<int:note_id>/reply/", notes.admin_reply),
     path("notes/<int:note_id>/", notes.delete_note),
 ]

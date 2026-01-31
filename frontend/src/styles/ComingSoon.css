@@ -1,0 +1,83 @@
+.coming-soon-page {
+    min-height: calc(100vh - 73px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #111313 0%, #181b1b 100%);
+}
+
+.coming-soon-content {
+    text-align: center;
+    padding: 40px;
+}
+
+.coming-soon-title {
+    font-size: 5rem;
+    font-weight: 400;
+    color: #e4e7e7;
+    margin: 0 0 20px 0;
+    text-transform: lowercase;
+    letter-spacing: 2px;
+}
+
+.coming-soon-subtitle {
+    font-size: 1.5rem;
+    color: #949e9e;
+    margin: 0 0 40px 0;
+    text-transform: lowercase;
+}
+
+.dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    background: #616b6b;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 900px) {
+    .coming-soon-title {
+        font-size: 4rem;
+    }
+
+    .coming-soon-subtitle {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .coming-soon-title {
+        font-size: 3rem;
+    }
+
+    .coming-soon-subtitle {
+        font-size: 1.1rem;
+    }
+}

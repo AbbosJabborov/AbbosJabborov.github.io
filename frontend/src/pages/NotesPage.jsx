@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "./styles/NotesPage.css";
-import API_BASE_URL from "./config/api";
+import "../styles/NotesPage.css";
+import API_BASE_URL from "../config/api";
 
 export default function NotesPage() {
   const [notes, setNotes] = useState([]);
@@ -22,6 +22,7 @@ export default function NotesPage() {
 
     fetchNotes();
   }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     try {
@@ -46,19 +47,37 @@ export default function NotesPage() {
     e.dataTransfer.effectAllowed = "move";
   }
 
-  function handleDrop(e) {
+  async function handleDrop(e) {
     e.preventDefault();
     if (!draggedNote) return;
 
     const container = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - container.left) / container.width) * 100;
-    const y = ((e.clientY - container.top) / container.height) * 100;
+    const x = Math.max(
+      0,
+      Math.min(95, ((e.clientX - container.left) / container.width) * 100),
+    );
+    const y = Math.max(
+      0,
+      Math.min(95, ((e.clientY - container.top) / container.height) * 100),
+    );
 
-    // Update position (you'd need a PATCH endpoint for this)
+    // Update locally first
     const updatedNotes = notes.map((n) =>
       n.id === draggedNote.id ? { ...n, position_x: x, position_y: y } : n,
     );
     setNotes(updatedNotes);
+
+    // Persist to backend
+    try {
+      await fetch(`${API_BASE_URL}/api/notes/${draggedNote.id}/position/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ position_x: x, position_y: y }),
+      });
+    } catch (e) {
+      console.error("Failed to update note position", e);
+    }
+
     setDraggedNote(null);
   }
 
@@ -73,12 +92,12 @@ export default function NotesPage() {
           className="take-note-btn"
           onClick={() => setShowForm(!showForm)}
         >
-          📝 Take a Note
+          📝 take a note
         </button>
         {showForm && (
           <form className="note-form" onSubmit={handleSubmit}>
             <textarea
-              placeholder="Write your message..."
+              placeholder="write your message..."
               value={formData.message}
               onChange={(e) =>
                 setFormData({ ...formData, message: e.target.value })
@@ -88,7 +107,7 @@ export default function NotesPage() {
             />
             <input
               type="text"
-              placeholder="Your name (optional)"
+              placeholder="your name (optional)"
               value={formData.sender}
               onChange={(e) =>
                 setFormData({ ...formData, sender: e.target.value })
@@ -96,9 +115,9 @@ export default function NotesPage() {
               maxLength={50}
             />
             <div className="form-actions">
-              <button type="submit">Post Note</button>
+              <button type="submit">post note</button>
               <button type="button" onClick={() => setShowForm(false)}>
-                Cancel
+                cancel
               </button>
             </div>
           </form>
@@ -126,12 +145,10 @@ export default function NotesPage() {
             <div className="note-content">
               <p>{note.message}</p>
               <span className="note-sender">
-                — {note.sender || "Anonymous"}
+                — {note.sender || "anonymous"}
               </span>
             </div>
-            {note.admin_reply && (
-              <div className="admin-badge">💬 Admin replied</div>
-            )}
+            {note.admin_reply && <div className="admin-badge">💬 replied</div>}
           </div>
         ))}
       </div>
@@ -142,13 +159,13 @@ export default function NotesPage() {
             <button className="close-btn" onClick={() => setSelectedNote(null)}>
               ×
             </button>
-            <h3>Note from {selectedNote.sender || "Anonymous"}</h3>
+            <h3>note from {selectedNote.sender || "anonymous"}</h3>
             <p className="modal-message">{selectedNote.message}</p>
             <small>{new Date(selectedNote.created_at).toLocaleString()}</small>
 
             {selectedNote.admin_reply && (
               <div className="admin-reply">
-                <h4>✨ Admin Response</h4>
+                <h4>✨ admin response</h4>
                 <p>{selectedNote.admin_reply}</p>
                 <small>
                   {new Date(selectedNote.replied_at).toLocaleString()}

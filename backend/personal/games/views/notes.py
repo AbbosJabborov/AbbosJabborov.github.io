@@ -2,7 +2,11 @@ import random
 
 from django.utils import timezone
 from games.models import Note
-from games.serializer import AdminReplySerializer, NoteSerializer
+from games.serializer import (
+    AdminReplySerializer,
+    NotePositionSerializer,
+    NoteSerializer,
+)
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -43,15 +47,40 @@ def notes_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(["PATCH"])
+@permission_classes([AllowAny])
+def update_note_position(request, note_id):
+    """Update note position when dragged"""
+    try:
+        note = Note.objects.get(id=note_id)
+    except Note.DoesNotExist:
+        return Response({"error": "Note not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = NotePositionSerializer(data=request.data)
+    if serializer.is_valid():
+        note.position_x = serializer.validated_data["position_x"]
+        note.position_y = serializer.validated_data["position_y"]
+        note.save()
+        return Response(NoteSerializer(note).data)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])  # Only admin can reply
+@permission_classes([IsAuthenticated])
 def admin_reply(request, note_id):
     try:
         note = Note.objects.get(id=note_id)
     except Note.DoesNotExist:
         return Response({"error": "Note not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = AdminReplySerializer(data=request.data)
+    # Handle both JSON and form data
+    if request.content_type == "application/json":
+        data = request.data
+    else:
+        data = {"admin_reply": request.POST.get("admin_reply", "")}
+
+    serializer = AdminReplySerializer(data=data)
     if serializer.is_valid():
         note.admin_reply = serializer.validated_data["admin_reply"]
         note.replied_at = timezone.now()
@@ -62,7 +91,7 @@ def admin_reply(request, note_id):
 
 
 @api_view(["DELETE"])
-@permission_classes([IsAuthenticated])  # Only admin can delete
+@permission_classes([IsAuthenticated])
 def delete_note(request, note_id):
     try:
         note = Note.objects.get(id=note_id)
