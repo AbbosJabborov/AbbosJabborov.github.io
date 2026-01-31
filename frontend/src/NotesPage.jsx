@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./styles/NotesPage.css";
+import API_BASE_URL from "./config/api";
 
 export default function NotesPage() {
   const [notes, setNotes] = useState([]);
@@ -11,7 +12,7 @@ export default function NotesPage() {
   useEffect(() => {
     async function fetchNotes() {
       try {
-        const res = await fetch("/api/notes/");
+        const res = await fetch(`${API_BASE_URL}/api/notes/`);
         const data = await res.json();
         setNotes(data);
       } catch (e) {
