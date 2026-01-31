@@ -1,0 +1,38 @@
+.projects-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px;
+    min-height: calc(100vh - 73px);
+}
+
+.page-title {
+    font-size: 3.5rem;
+    font-weight: 400;
+    color: #e4e7e7;
+    margin: 0 0 50px 0;
+    text-transform: lowercase;
+    letter-spacing: 1px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .projects-page {
+        padding: 40px 24px;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        margin-bottom: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .projects-page {
+        padding: 30px 20px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        margin-bottom: 30px;
+    }
+}

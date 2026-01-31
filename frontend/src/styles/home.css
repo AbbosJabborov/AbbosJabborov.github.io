@@ -1,21 +1,23 @@
 .home {
-    max-width: 1400px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 60px 40px;
+    padding: 80px 40px;
     min-height: calc(100vh - 73px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Hero Section */
 .home-hero {
-    margin-bottom: 80px;
-    max-width: 800px;
+    width: 100%;
 }
 
 .typing-animation {
     font-size: 4rem;
     font-weight: 400;
     color: #e4e7e7;
-    margin: 0 0 40px 0;
+    margin: 0 0 60px 0;
     line-height: 1.2;
     min-height: 200px;
 }
@@ -36,72 +38,76 @@
     }
 }
 
-.hero-subtitle {
-    font-size: 1.3rem;
+.hero-description {
+    font-size: 1.6rem;
     color: #c9cfcf;
-    line-height: 1.8;
+    line-height: 2;
+    max-width: 700px;
 }
 
-.hero-subtitle p {
-    margin: 8px 0;
+.hero-description p {
+    margin: 0 0 20px 0;
+    font-size: 1.6rem;
 }
 
-.hero-subtitle .highlight {
+.hero-description ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.hero-description li {
+    margin: 16px 0;
+    font-size: 1.6rem;
+}
+
+.link-highlight {
     color: #e4e7e7;
+    text-decoration: none;
     font-weight: 600;
-    border-bottom: 2px solid #616b6b;
+    border-bottom: 2px solid #798686;
     padding-bottom: 2px;
+    transition: all 0.2s ease;
 }
 
-/* Projects Section */
-.projects-section {
-    margin-top: 100px;
-}
-
-.section-title {
-    font-size: 2.5rem;
-    font-weight: 400;
-    color: #e4e7e7;
-    margin-bottom: 30px;
-    text-transform: lowercase;
-    letter-spacing: 1px;
+.link-highlight:hover {
+    color: #f2f3f3;
+    border-bottom-color: #afb6b6;
 }
 
 /* Responsive */
 @media (max-width: 900px) {
     .home {
-        padding: 40px 24px;
+        padding: 60px 32px;
     }
 
     .typing-animation {
         font-size: 3rem;
         min-height: 150px;
+        margin-bottom: 50px;
     }
 
-    .hero-subtitle {
-        font-size: 1.1rem;
-    }
-
-    .section-title {
-        font-size: 2rem;
+    .hero-description,
+    .hero-description p,
+    .hero-description li {
+        font-size: 1.3rem;
     }
 }
 
 @media (max-width: 600px) {
     .home {
-        padding: 30px 20px;
+        padding: 40px 24px;
     }
 
     .typing-animation {
-        font-size: 2rem;
-        min-height: 120px;
+        font-size: 2.2rem;
+        min-height: 130px;
+        margin-bottom: 40px;
     }
 
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-
-    .section-title {
-        font-size: 1.5rem;
+    .hero-description,
+    .hero-description p,
+    .hero-description li {
+        font-size: 1.1rem;
     }
 }
