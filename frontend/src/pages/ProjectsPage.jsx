@@ -24,7 +24,9 @@ export default function ProjectsPage() {
 
   return (
     <div className="projects-page">
-      <h1 className="page-title">projects</h1>
+      <h1 className="page-title">
+        projects (cannot open for now sry, come back tomorrow)
+      </h1>
       <Shelf items={projects} />
     </div>
   );

@@ -28,7 +28,7 @@ export default function TypingAnimation() {
       { text: "hey\nwelcome to my pers", delay: 80 },
       { text: "hey\nwelcome to my perso", delay: 80 },
       { text: "hey\nwelcome to my person", delay: 80 },
-      { text: "hey\nwelcome to my persona", delay: 100 }, // mistake
+      { text: "hey\nwelcome to my persons", delay: 100 }, // mistake
       { text: "hey\nwelcome to my person", delay: 150 }, // delete a
       { text: "hey\nwelcome to my persona", delay: 100 }, // retype a
       { text: "hey\nwelcome to my personal", delay: 80 },

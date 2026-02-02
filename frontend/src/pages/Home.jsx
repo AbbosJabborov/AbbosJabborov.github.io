@@ -30,16 +30,16 @@ export default function Home() {
               </Link>
             </li>
             <li>
-              *even see what i am{" "}
+              *even see what i am listening to on{" "}
               <a
                 href="https://open.spotify.com/user/313tv3lpxnwpjfrmclgff7swdzua"
                 target="_blank"
                 rel="noreferrer"
                 className="link-highlight"
               >
-                listening to on spotify
+                spotify
               </a>{" "}
-              at the moment
+              at the moment.
             </li>
           </ul>
         </div>
