@@ -87,17 +87,29 @@ TEMPLATES = [
 WSGI_APPLICATION = "personal.wsgi.application"
 
 
-# Database configuration matching reference project with Postgres as default
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="personal_db"),
-        "USER": config("DB_USER", default="personal_user"),
-        "PASSWORD": config("DB_PASSWORD", default="personal_password_change_me"),
-        "HOST": config("DB_HOST", default="db"),
-        "PORT": config("DB_PORT", default="5432"),
+# Database configuration: PostgreSQL in production/Docker, SQLite fallback for local CLI/testing
+USE_SQLITE = config("USE_SQLITE", default=False, cast=bool)
+DB_HOST = config("DB_HOST", default=None)
+
+if USE_SQLITE or not DB_HOST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME", default="personal_db"),
+            "USER": config("DB_USER", default="personal_user"),
+            "PASSWORD": config("DB_PASSWORD", default="personal_password_change_me"),
+            "HOST": DB_HOST,
+            "PORT": config("DB_PORT", default="5432"),
+        }
+    }
+
 
 
 # Password validation

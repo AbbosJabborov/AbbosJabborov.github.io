@@ -1,0 +1,134 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$JSm4mjlEbW1QJkS5POmeMe$DnA7xHf45UdRUpohbQl/J+WTwTzUDjpsCLJroRVGnuc=",
+    "last_login": "2026-01-30T07:23:32.949Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-12-13T17:36:25.310Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "5uui1fh2v5f15ja4ral6t4napbb73fe3",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hAmdAp16d4zkGGGStVAUtpV490NSRe6fe_9f6hA-5bD3tIaFlFXBeryyyLxK5Uu5EnlUTXXsq1L1D3Rp236XiW9b2f7d5Cp5b62YI2fRBhpREY_TN4y4QyCGDu3VswMntgNBhMxwug8D9EDOEvq8wXkdTfQ:1vYGE6:EVLk9ae5td3qbjTFtaoPoS2b-IrKdX0QgFFVyFZyUQM",
+    "expire_date": "2026-01-07T04:11:54.059Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "unt05difu55vutstr396e0dqlgt5t0hu",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hAmdAp16d4zkGGGStVAUtpV490NSRe6fe_9f6hA-5bD3tIaFlFXBeryyyLxK5Uu5EnlUTXXsq1L1D3Rp236XiW9b2f7d5Cp5b62YI2fRBhpREY_TN4y4QyCGDu3VswMntgNBhMxwug8D9EDOEvq8wXkdTfQ:1vliqq:WFwlLBCcYfxdKQi8x0GpU6CWYOWpiRsgbdOSHnkDJKA",
+    "expire_date": "2026-02-13T07:23:32.964Z"
+  }
+},
+{
+  "model": "games.game",
+  "pk": 1,
+  "fields": {
+    "title": "stopit",
+    "cover": ""
+  }
+},
+{
+  "model": "games.game",
+  "pk": 2,
+  "fields": {
+    "title": "stopit",
+    "cover": ""
+  }
+},
+{
+  "model": "games.game",
+  "pk": 3,
+  "fields": {
+    "title": "asda",
+    "cover": "images/movie-cover/2025/12/15/sunset_background_digital_art-wallpaper-2880x1620.jpg"
+  }
+},
+{
+  "model": "games.project",
+  "pk": 1,
+  "fields": {
+    "slug": "",
+    "title": "hel;l",
+    "desc": "",
+    "cover": "images/movie-cover/2025/12/15/undefined1.jpeg",
+    "is_opensource": true,
+    "embed_html": null
+  }
+},
+{
+  "model": "games.project",
+  "pk": 2,
+  "fields": {
+    "slug": "co-op-tetris",
+    "title": "Co-Op Tetris",
+    "desc": "two player tetris game",
+    "cover": "images/movie-cover/2025/12/15/Screenshot_from_2025-11-19_18-07-54.png",
+    "is_opensource": true,
+    "embed_html": "<iframe frameborder=\"0\" src=\"https://itch.io/embed-upload/11960525?color=4f6781\" allowfullscreen=\"\" width=\"1300\" height=\"760\"><a href=\"https://claive.itch.io/co-op-tetris\">Play Co-Op Tetris on itch.io</a></iframe>"
+  }
+},
+{
+  "model": "games.post",
+  "pk": 1,
+  "fields": {
+    "title": "Physically attracted to benches",
+    "body": "no comment",
+    "post_date": "2025-12-15"
+  }
+},
+{
+  "model": "games.note",
+  "pk": 2,
+  "fields": {
+    "message": "abra cadabra",
+    "sender": "lmao",
+    "position_x": 66.27533942444595,
+    "position_y": 47.81728782667146,
+    "color": "#616b6b",
+    "created_at": "2026-01-30T07:12:24.025Z",
+    "admin_reply": null,
+    "replied_at": null
+  }
+},
+{
+  "model": "games.note",
+  "pk": 3,
+  "fields": {
+    "message": "dad",
+    "sender": "adsa",
+    "position_x": 9.123436646035605,
+    "position_y": 18.834573424381365,
+    "color": "#616b6b",
+    "created_at": "2026-01-30T07:29:25.855Z",
+    "admin_reply": null,
+    "replied_at": null
+  }
+},
+{
+  "model": "games.note",
+  "pk": 4,
+  "fields": {
+    "message": "aodkpas",
+    "sender": "asda",
+    "position_x": 27.756676318456968,
+    "position_y": 58.720229558806665,
+    "color": "#949e9e",
+    "created_at": "2026-01-30T08:05:15.402Z",
+    "admin_reply": null,
+    "replied_at": null
+  }
+}
+]
