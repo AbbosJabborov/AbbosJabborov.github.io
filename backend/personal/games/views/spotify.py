@@ -38,7 +38,6 @@ def callback(request):
     if token_info:
         return Response(
             {
-                "message": "Success! Add this to your .env file:",
                 "refresh_token": token_info["refresh_token"],
             }
         )

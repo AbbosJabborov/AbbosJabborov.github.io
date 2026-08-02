@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-personal_db}
+      POSTGRES_USER: ${DB_USER:-personal_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-personal_password_change_me}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  app:
+    build:
+      context: ./backend
+    container_name: django_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+      - proxy
+
+networks:
+  internal:
+  proxy:
+    external: true
+
+volumes:
+  pgdata:
+

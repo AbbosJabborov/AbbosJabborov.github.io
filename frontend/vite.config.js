@@ -7,8 +7,17 @@ export default defineConfig({
   base: "/",
   server: {
     proxy: {
-      "/api": "https://abbosjabborov-github-io.onrender.com/",
+      // Directs frontend "/api/..." requests to your local Docker backend
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        secure: false,
+      },
     },
-    allowedHosts: ["unconverging-daxton-pedagogically.ngrok-free.dev"],
+    allowedHosts: [
+      "unconverging-daxton-pedagogically.ngrok-free.dev",
+      "localhost",
+      "127.0.0.1",
+    ],
   },
 });
