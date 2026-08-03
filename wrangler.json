@@ -1,0 +1,8 @@
+{
+  "name": "claive",
+  "compatibility_date": "2026-08-03",
+  "assets": {
+    "directory": "./frontend/dist",
+    "not_found_handling": "single-page-application"
+  }
+}
