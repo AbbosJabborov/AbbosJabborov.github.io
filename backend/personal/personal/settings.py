@@ -53,19 +53,28 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = str(
-    config(
-        "CORS_ALLOWED_ORIGINS",
-        default="http://localhost:3000,http://localhost:5173,https://abbosjabborov.github.io,https://claive.abbosjabborov12.workers.dev",
-    )
-).split(",")
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in str(
+        config(
+            "CORS_ALLOWED_ORIGINS",
+            default="http://localhost:3000,http://localhost:5173,https://abbosjabborov.github.io,https://claive.abbosjabborov12.workers.dev",
+        )
+    ).split(",")
+    if origin.strip()
+]
 
-CSRF_TRUSTED_ORIGINS = str(
-    config(
-        "CSRF_TRUSTED_ORIGINS",
-        default="https://abbosjabborov.github.io,https://unconverging-daxton-pedagogically.ngrok-free.dev,https://claive.abbosjabborov12.workers.dev",
-    )
-).split(",")
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in str(
+        config(
+            "CSRF_TRUSTED_ORIGINS",
+            default="https://abbosjabborov.github.io,https://unconverging-daxton-pedagogically.ngrok-free.dev,https://claive.abbosjabborov12.workers.dev,https://api-personal.169.58.100.190.sslip.io",
+        )
+    ).split(",")
+    if origin.strip()
+]
+
 
 
 ROOT_URLCONF = "personal.urls"
