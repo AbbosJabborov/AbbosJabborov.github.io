@@ -49,7 +49,7 @@ def fetch_steam_game(request, appid):
                     "review_headline": f"My thoughts on {name}",
                     "review_content": f"<p>{game_data.get('short_description', '')}</p>",
                     "rating": 9,
-                    "playtime_hours": 15.0,
+                    "playtime_hours": 0.0,
                 },
             )
             serializer = GameSerializer(game)
@@ -64,7 +64,7 @@ def fetch_steam_game(request, appid):
 @permission_classes([AllowAny])
 def sync_steam_library(request):
     """
-    Sync owned games and exact playtimes directly from user's Steam Profile via Steam Web API.
+    Sync ALL owned games and exact playtimes directly from user's Steam Profile via Steam Web API.
     """
     api_key = config("STEAM_API_KEY", default=None)
     steam_id = config("STEAM_ID64", default=None)
@@ -96,10 +96,6 @@ def sync_steam_library(request):
             playtime_mins = item.get("playtime_forever", 0)
             playtime_hours = round(playtime_mins / 60.0, 1)
 
-            # Only sync games with at least 1 hour played
-            if playtime_hours < 1.0:
-                continue
-
             icon_hash = item.get("img_icon_url")
             icon_url = f"http://media.steampowered.com/steamcommunity/public/images/apps/{appid}/{icon_hash}.jpg" if icon_hash else f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/header.jpg"
 
@@ -120,10 +116,49 @@ def sync_steam_library(request):
             if not created:
                 game.playtime_hours = playtime_hours
                 game.title = name
+                game.icon_url = icon_url
                 game.save()
 
             synced_count += 1
 
-        return Response({"message": f"Successfully synced {synced_count} games from Steam!", "total_owned": len(games_list)})
+        return Response({"message": f"Successfully synced ALL {synced_count} games from Steam!", "total_owned": len(games_list)})
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_steam_profile(request):
+    """
+    Fetch Steam User Profile details (personaname, avatar, profileurl) using ISteamUser/GetPlayerSummaries.
+    """
+    api_key = config("STEAM_API_KEY", default=None)
+    steam_id = config("STEAM_ID64", default=None)
+
+    api_key = request.GET.get("key", api_key)
+    steam_id = request.GET.get("steamid", steam_id)
+
+    default_profile = {
+        "personaname": "CleverCap",
+        "avatar": "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg",
+        "profileurl": "https://steamcommunity.com/id/clevercap/"
+    }
+
+    if not api_key or not steam_id:
+        return Response(default_profile)
+
+    try:
+        url = f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={api_key}&steamids={steam_id}"
+        res = requests.get(url, timeout=10)
+        data = res.json()
+        players = data.get("response", {}).get("players", [])
+        if players:
+            p = players[0]
+            return Response({
+                "personaname": p.get("personaname", "CleverCap"),
+                "avatar": p.get("avatarfull") or p.get("avatarmedium") or p.get("avatar"),
+                "profileurl": p.get("profileurl", "https://steamcommunity.com/id/clevercap/")
+            })
+        return Response(default_profile)
+    except Exception as e:
+        return Response(default_profile)

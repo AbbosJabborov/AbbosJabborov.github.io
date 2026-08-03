@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API_BASE_URL from "../config/api";
 import "../styles/steam_library.css";
 
@@ -7,12 +8,15 @@ export default function GamesPage() {
   const [selectedGame, setSelectedGame] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [steamAppIdInput, setSteamAppIdInput] = useState("");
-  const [importing, setImporting] = useState(false);
+  const [steamProfile, setSteamProfile] = useState({
+    personaname: "CleverCap",
+    avatar: "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg",
+    profileurl: "https://steamcommunity.com/id/clevercap/",
+  });
 
   useEffect(() => {
     fetchGames();
+    fetchSteamProfile();
   }, []);
 
   async function fetchGames() {
@@ -32,22 +36,15 @@ export default function GamesPage() {
     }
   }
 
-  async function handleImportSteamGame(e) {
-    e.preventDefault();
-    if (!steamAppIdInput) return;
+  async function fetchSteamProfile() {
     try {
-      setImporting(true);
-      const res = await fetch(`${API_BASE_URL}/api/games/steam/${steamAppIdInput}/`);
-      if (!res.ok) throw new Error("Could not fetch game from Steam");
-      const newGame = await res.json();
-      await fetchGames();
-      setSelectedGame(newGame);
-      setShowAddModal(false);
-      setSteamAppIdInput("");
+      const res = await fetch(`${API_BASE_URL}/api/steam/profile/`);
+      if (res.ok) {
+        const data = await res.json();
+        setSteamProfile(data);
+      }
     } catch (err) {
-      alert("Error importing Steam Game App ID: " + err.message);
-    } finally {
-      setImporting(false);
+      console.warn("Failed to fetch Steam profile", err);
     }
   }
 
@@ -58,7 +55,7 @@ export default function GamesPage() {
   const favoriteGames = filteredGames.filter((g) => g.is_favorite);
   const otherGames = filteredGames.filter((g) => !g.is_favorite);
 
-  // Simple Markdown/Telegra.ph content parser for reviews
+  // Markdown / Telegra.ph content parser for game reviews
   function renderTelegraphContent(content) {
     if (!content) return <p>No review written yet.</p>;
 
@@ -93,21 +90,26 @@ export default function GamesPage() {
       {/* Top Steam Header Bar */}
       <div className="steam-topbar">
         <div className="steam-nav-links">
-          <span className="steam-nav-item">STORE</span>
+          <Link to="/" className="steam-nav-item">HOME</Link>
           <span className="steam-nav-item active">LIBRARY</span>
-          <span className="steam-nav-item">COMMUNITY</span>
         </div>
-        <div className="steam-user-profile">
+        <a
+          href={steamProfile.profileurl || "https://steamcommunity.com/id/clevercap/"}
+          target="_blank"
+          rel="noreferrer"
+          className="steam-user-profile"
+          style={{ textDecoration: "none" }}
+        >
           <img
-            src="https://avatars.githubusercontent.com/u/10000000?v=4"
-            alt="Profile"
+            src={steamProfile.avatar}
+            alt={steamProfile.personaname}
             className="steam-avatar"
             onError={(e) => {
-              e.target.src = "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg";
+              e.target.src = "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg";
             }}
           />
-          <span>CLAIVE</span>
-        </div>
+          <span>{steamProfile.personaname?.toUpperCase() || "CLEVERCAP"}</span>
+        </a>
       </div>
 
       <div className="steam-body">
@@ -123,18 +125,12 @@ export default function GamesPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <button
-              className="steam-add-btn"
-              onClick={() => setShowAddModal(true)}
-            >
-              + Import Steam App ID
-            </button>
           </div>
 
           <div className="steam-game-list">
             {loading ? (
               <div style={{ padding: "16px", color: "#8f98a0" }}>
-                Loading games...
+                Loading library...
               </div>
             ) : (
               <>
@@ -159,6 +155,9 @@ export default function GamesPage() {
                           }
                           alt={game.title}
                           className="steam-game-icon"
+                          onError={(e) => {
+                            e.target.src = "https://cdn.akamai.steamstatic.com/steam/apps/286070/header.jpg";
+                          }}
                         />
                         <span className="steam-game-title">{game.title}</span>
                         <span className="steam-fav-star">★</span>
@@ -187,6 +186,9 @@ export default function GamesPage() {
                         }
                         alt={game.title}
                         className="steam-game-icon"
+                        onError={(e) => {
+                          e.target.src = "https://cdn.akamai.steamstatic.com/steam/apps/286070/header.jpg";
+                        }}
                       />
                       <span className="steam-game-title">{game.title}</span>
                     </div>
@@ -269,43 +271,6 @@ export default function GamesPage() {
           )}
         </div>
       </div>
-
-      {/* Add Steam App ID Modal */}
-      {showAddModal && (
-        <div className="steam-modal-overlay">
-          <form className="steam-modal" onSubmit={handleImportSteamGame}>
-            <h3>Import Game from Steam</h3>
-            <p style={{ fontSize: "13px", color: "#8f98a0", margin: 0 }}>
-              Enter a Steam App ID (e.g. 570 for Dota 2, 1091500 for Cyberpunk 2077, 286070 for Slay the Spire).
-            </p>
-            <input
-              type="number"
-              placeholder="Steam App ID..."
-              value={steamAppIdInput}
-              onChange={(e) => setSteamAppIdInput(e.target.value)}
-              autoFocus
-              required
-            />
-            <div className="steam-modal-actions">
-              <button
-                type="button"
-                className="steam-add-btn"
-                style={{ background: "#2a3f5a", borderColor: "#2a3f5a" }}
-                onClick={() => setShowAddModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="steam-add-btn"
-                disabled={importing}
-              >
-                {importing ? "Importing..." : "Fetch & Add"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </div>
   );
 }

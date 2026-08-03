@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -12,10 +12,13 @@ import "./styles/home.css";
 import "./styles/projects.css";
 import "./styles/shelves.css";
 
-export default function App() {
+function AppContent() {
+  const location = useLocation();
+  const isGamesPage = location.pathname === "/games";
+
   return (
-    <BrowserRouter>
-      <Navbar />
+    <>
+      {!isGamesPage && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/games" element={<GamesPage />} />
@@ -24,6 +27,14 @@ export default function App() {
         <Route path="/notes" element={<NotesPage />} />
         <Route path="/posts" element={<PostsPage />} />
       </Routes>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
