@@ -7,7 +7,9 @@ urlpatterns = [
     path("games/<int:pk>/", games.GameDetailView.as_view(), name="game-detail"),
     path("games/steam/<int:appid>/", games.fetch_steam_game, name="fetch-steam-game"),
     path("games/sync-steam/", games.sync_steam_library, name="sync-steam-library"),
+    path("games/epic/", games.add_epic_game, name="add-epic-game"),
     path("steam/profile/", games.get_steam_profile, name="steam-profile"),
+
 
 
 

@@ -160,6 +160,11 @@ export default function GamesPage() {
                           }}
                         />
                         <span className="steam-game-title">{game.title}</span>
+                        {game.platform === "EPIC" && (
+                          <span style={{ fontSize: "9px", background: "#333", color: "#fff", padding: "1px 4px", borderRadius: "3px", fontWeight: "700" }}>
+                            EPIC
+                          </span>
+                        )}
                         <span className="steam-fav-star">★</span>
                       </div>
                     ))}
@@ -191,6 +196,11 @@ export default function GamesPage() {
                         }}
                       />
                       <span className="steam-game-title">{game.title}</span>
+                      {game.platform === "EPIC" && (
+                        <span style={{ fontSize: "9px", background: "#333", color: "#fff", padding: "1px 4px", borderRadius: "3px", fontWeight: "700" }}>
+                          EPIC
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -233,9 +243,9 @@ export default function GamesPage() {
                       </span>
                     </div>
                     <div className="steam-stat-box">
-                      <span className="steam-stat-label">LAST PLAYED</span>
-                      <span className="steam-stat-value">
-                        {selectedGame.last_played || "Recently"}
+                      <span className="steam-stat-label">PLATFORM</span>
+                      <span className="steam-stat-value" style={{ color: "#66c0f4" }}>
+                        {selectedGame.platform || "STEAM"}
                       </span>
                     </div>
                     <div className="steam-rating-badge">

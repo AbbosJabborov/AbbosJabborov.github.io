@@ -10,7 +10,9 @@ class GameSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "slug",
+            "platform",
             "steam_appid",
+
             "cover",
             "cover_url",
             "hero_url",

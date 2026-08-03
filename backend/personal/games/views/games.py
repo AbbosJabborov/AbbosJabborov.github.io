@@ -43,6 +43,7 @@ def fetch_steam_game(request, appid):
                 steam_appid=appid,
                 defaults={
                     "title": name,
+                    "platform": "STEAM",
                     "cover_url": f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/library_600x900_2x.jpg",
                     "hero_url": f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/library_hero.jpg",
                     "icon_url": header_image or f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/header.jpg",
@@ -64,7 +65,7 @@ def fetch_steam_game(request, appid):
 @permission_classes([AllowAny])
 def sync_steam_library(request):
     """
-    Sync ALL owned games and exact playtimes directly from user's Steam Profile via Steam Web API.
+    Sync owned games with at least 0.1 hours playtime directly from user's Steam Profile via Steam Web API.
     """
     api_key = config("STEAM_API_KEY", default=None)
     steam_id = config("STEAM_ID64", default=None)
@@ -96,6 +97,10 @@ def sync_steam_library(request):
             playtime_mins = item.get("playtime_forever", 0)
             playtime_hours = round(playtime_mins / 60.0, 1)
 
+            # Filter threshold: minimum 0.1 hours
+            if playtime_hours < 0.1:
+                continue
+
             icon_hash = item.get("img_icon_url")
             icon_url = f"http://media.steampowered.com/steamcommunity/public/images/apps/{appid}/{icon_hash}.jpg" if icon_hash else f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/header.jpg"
 
@@ -103,6 +108,7 @@ def sync_steam_library(request):
                 steam_appid=appid,
                 defaults={
                     "title": name,
+                    "platform": "STEAM",
                     "cover_url": f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/library_600x900_2x.jpg",
                     "hero_url": f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/library_hero.jpg",
                     "icon_url": icon_url,
@@ -117,13 +123,55 @@ def sync_steam_library(request):
                 game.playtime_hours = playtime_hours
                 game.title = name
                 game.icon_url = icon_url
+                game.platform = "STEAM"
                 game.save()
 
             synced_count += 1
 
-        return Response({"message": f"Successfully synced ALL {synced_count} games from Steam!", "total_owned": len(games_list)})
+        return Response({"message": f"Successfully synced {synced_count} games (>= 0.1 hrs played) from Steam!", "total_owned": len(games_list)})
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def add_epic_game(request):
+    """
+    Add or import an Epic Games Store game into the library with platform='EPIC'.
+    """
+    data = request.data
+    title = data.get("title")
+
+    if not title:
+        return Response({"error": "Game title is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    game, created = Game.objects.get_or_create(
+        title=title,
+        defaults={
+            "platform": "EPIC",
+            "cover_url": data.get("cover_url"),
+            "hero_url": data.get("hero_url"),
+            "icon_url": data.get("icon_url"),
+            "playtime_hours": float(data.get("playtime_hours", 0.0)),
+            "is_favorite": data.get("is_favorite", False),
+            "review_headline": data.get("review_headline", f"My review of {title}"),
+            "review_content": data.get("review_content", f"Played on Epic Games."),
+            "rating": int(data.get("rating", 9)),
+        },
+    )
+
+    if not created:
+        if "playtime_hours" in data:
+            game.playtime_hours = float(data["playtime_hours"])
+        if "cover_url" in data:
+            game.cover_url = data["cover_url"]
+        if "hero_url" in data:
+            game.hero_url = data["hero_url"]
+        game.platform = "EPIC"
+        game.save()
+
+    serializer = GameSerializer(game)
+    return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
 @api_view(["GET"])

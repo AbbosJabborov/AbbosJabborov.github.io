@@ -7,6 +7,8 @@ from django.utils.text import slugify
 class Game(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(blank=True, null=True, unique=True)
+    platform = models.CharField(max_length=20, default="STEAM")
+
 
     steam_appid = models.IntegerField(null=True, blank=True, help_text="Steam App ID for automated Steam assets")
     cover = models.ImageField(
