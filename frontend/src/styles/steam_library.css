@@ -1,3 +1,32 @@
+/* Motiva Sans (Official Steam Typography) */
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-ExtraBold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+}
+
 /* Steam Library UI Design System */
 .steam-container {
   display: flex;
@@ -5,9 +34,10 @@
   height: 100vh;
   background-color: #101822;
   color: #c6d4df;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
+  font-family: 'Motiva Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
   overflow: hidden;
 }
+
 
 
 /* Top Steam Header Bar */
