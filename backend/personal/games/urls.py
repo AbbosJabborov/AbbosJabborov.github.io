@@ -4,7 +4,9 @@ from .views import games, notes, posts, projects, spotify
 
 urlpatterns = [
     path("games/", games.CreateListGame.as_view(), name="games"),
-    path("games/<pk>/<slug:slug>", games.GameView.as_view(), name="game-view"),
+    path("games/<int:pk>/", games.GameDetailView.as_view(), name="game-detail"),
+    path("games/steam/<int:appid>/", games.fetch_steam_game, name="fetch-steam-game"),
+
     path("projects/", projects.CreateListProject.as_view(), name="projects"),
     path(
         "projects/<slug:slug>",

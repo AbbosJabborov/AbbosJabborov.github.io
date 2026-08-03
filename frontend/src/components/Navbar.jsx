@@ -93,7 +93,9 @@ export default function Navbar() {
           claive
         </Link>
         <Link to="/projects">projects</Link>
+        <Link to="/games">games</Link>
         <Link to="/notes">notes</Link>
+
         <Link to="/posts">posts</Link>
         <a
           href="https://github.com/AbbosJabborov"

@@ -6,7 +6,26 @@ from games.models import Game, Note, Post, Project, Review
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = ["id", "title", "cover"]
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "steam_appid",
+            "cover",
+            "cover_url",
+            "hero_url",
+            "icon_url",
+            "is_favorite",
+            "category",
+            "playtime_hours",
+            "last_played",
+            "review_headline",
+            "review_content",
+            "rating",
+            "created_at",
+            "updated_at",
+        ]
+
 
 
 class ProjectSerializer(serializers.ModelSerializer):

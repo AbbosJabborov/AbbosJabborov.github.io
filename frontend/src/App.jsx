@@ -5,6 +5,7 @@ import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetail from "./pages/ProjectDetail";
 import NotesPage from "./pages/NotesPage";
 import PostsPage from "./pages/PostsPage";
+import GamesPage from "./pages/GamesPage";
 import Navbar from "./components/Navbar";
 import "./styles/navbar.css";
 import "./styles/home.css";
@@ -17,6 +18,7 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/games" element={<GamesPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/project/:slug" element={<ProjectDetail />} />
         <Route path="/notes" element={<NotesPage />} />

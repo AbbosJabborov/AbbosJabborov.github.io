@@ -1,59 +1,134 @@
 [
 {
-  "model": "auth.user",
+  "model": "games.game",
+  "pk": 4,
   "fields": {
-    "password": "pbkdf2_sha256$1000000$JSm4mjlEbW1QJkS5POmeMe$DnA7xHf45UdRUpohbQl/J+WTwTzUDjpsCLJroRVGnuc=",
-    "last_login": "2026-01-30T07:23:32.949Z",
-    "is_superuser": true,
-    "username": "admin",
-    "first_name": "",
-    "last_name": "",
-    "email": "admin@gmail.com",
-    "is_staff": true,
-    "is_active": true,
-    "date_joined": "2025-12-13T17:36:25.310Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "5uui1fh2v5f15ja4ral6t4napbb73fe3",
-  "fields": {
-    "session_data": ".eJxVjEEOwiAQRe_C2hAmdAp16d4zkGGGStVAUtpV490NSRe6fe_9f6hA-5bD3tIaFlFXBeryyyLxK5Uu5EnlUTXXsq1L1D3Rp236XiW9b2f7d5Cp5b62YI2fRBhpREY_TN4y4QyCGDu3VswMntgNBhMxwug8D9EDOEvq8wXkdTfQ:1vYGE6:EVLk9ae5td3qbjTFtaoPoS2b-IrKdX0QgFFVyFZyUQM",
-    "expire_date": "2026-01-07T04:11:54.059Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "unt05difu55vutstr396e0dqlgt5t0hu",
-  "fields": {
-    "session_data": ".eJxVjEEOwiAQRe_C2hAmdAp16d4zkGGGStVAUtpV490NSRe6fe_9f6hA-5bD3tIaFlFXBeryyyLxK5Uu5EnlUTXXsq1L1D3Rp236XiW9b2f7d5Cp5b62YI2fRBhpREY_TN4y4QyCGDu3VswMntgNBhMxwug8D9EDOEvq8wXkdTfQ:1vliqq:WFwlLBCcYfxdKQi8x0GpU6CWYOWpiRsgbdOSHnkDJKA",
-    "expire_date": "2026-02-13T07:23:32.964Z"
+    "title": "Slay the Spire",
+    "slug": "slay-the-spire",
+    "steam_appid": 286070,
+    "cover": "",
+    "cover_url": "https://cdn.akamai.steamstatic.com/steam/apps/286070/library_600x900_2x.jpg",
+    "hero_url": "https://cdn.akamai.steamstatic.com/steam/apps/286070/library_hero.jpg",
+    "icon_url": "https://cdn.akamai.steamstatic.com/steam/apps/286070/header.jpg",
+    "is_favorite": true,
+    "category": "FAVORITES",
+    "playtime_hours": 148.5,
+    "last_played": "Yesterday",
+    "review_headline": "The Gold Standard of Deckbuilding Roguelikes",
+    "review_content": "Slay the Spire is an absolute masterpiece. Combining deckbuilding card mechanics with procedurally generated roguelike runs created one of the most addictive game loops in modern indie history.\n\n### The Mechanics & Synergy\nEvery character (Ironclad, Silent, Defect, Watcher) feels entirely unique. Building a synergy around Poison, Strength, or Orbs makes every victory feel genuinely earned.\n\n![Deck Synergy](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHJ2eDF5OHJvazJjYXFpdjlsamJrbTZzeHEzeGU0ZTFydmsydnpteSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif)\n\n### Final Verdict\nWhether playing casually for 30 minutes or climbing Ascension 20, Slay the Spire never loses its magic. 10/10 masterclass.",
+    "rating": 10,
+    "created_at": "2026-08-03T13:01:37.294Z",
+    "updated_at": "2026-08-03T13:01:37.297Z"
   }
 },
 {
   "model": "games.game",
-  "pk": 1,
+  "pk": 5,
   "fields": {
-    "title": "stopit",
-    "cover": ""
+    "title": "Cyberpunk 2077",
+    "slug": "cyberpunk-2077",
+    "steam_appid": 1091500,
+    "cover": "",
+    "cover_url": "https://cdn.akamai.steamstatic.com/steam/apps/1091500/library_600x900_2x.jpg",
+    "hero_url": "https://cdn.akamai.steamstatic.com/steam/apps/1091500/library_hero.jpg",
+    "icon_url": "https://cdn.akamai.steamstatic.com/steam/apps/1091500/header.jpg",
+    "is_favorite": true,
+    "category": "FAVORITES",
+    "playtime_hours": 92.0,
+    "last_played": "3 days ago",
+    "review_headline": "Night City in 2.0 & Phantom Liberty is Breathtaking",
+    "review_content": "Cyberpunk 2077 went from one of the most controversial launches to one of the greatest redemption arcs in gaming history.\n\n### Atmosphere & World Building\nNight City is unmatched in visual fidelity, architectural scale, and immersion. Driving through Dogtown under neon rain with the radio blaring is pure aesthetic bliss.\n\n![Night City Scenery](https://cdn.akamai.steamstatic.com/steam/apps/1091500/ss_75e07a3c3062325c0e1818227b686e082845c05d.1920x1080.jpg)\n\n### Phantom Liberty DLC\nIdris Elba as Solomon Reed and the espionage thriller plotline elevates the narrative to legendary status. Highly recommended.",
+    "rating": 9,
+    "created_at": "2026-08-03T13:01:37.311Z",
+    "updated_at": "2026-08-03T13:01:37.313Z"
   }
 },
 {
   "model": "games.game",
-  "pk": 2,
+  "pk": 6,
   "fields": {
-    "title": "stopit",
-    "cover": ""
+    "title": "Hollow Knight",
+    "slug": "hollow-knight",
+    "steam_appid": 367520,
+    "cover": "",
+    "cover_url": "https://cdn.akamai.steamstatic.com/steam/apps/367520/library_600x900_2x.jpg",
+    "hero_url": "https://cdn.akamai.steamstatic.com/steam/apps/367520/library_hero.jpg",
+    "icon_url": "https://cdn.akamai.steamstatic.com/steam/apps/367520/header.jpg",
+    "is_favorite": true,
+    "category": "FAVORITES",
+    "playtime_hours": 64.2,
+    "last_played": "Last week",
+    "review_headline": "Atmospheric Metroidvania Perfection in Hallownest",
+    "review_content": "Hollow Knight is a hauntingly beautiful journey through the ruined insect kingdom of Hallownest. The tight combat controls, boss fights (Mantis Lords!), and melancholy soundtrack are perfection.\n\n### Visual Style & Audio\nHand-drawn 2D art with Christopher Larkin's orchestral score produces an unrivaled atmosphere.\n\n![Hollow Knight Exploration](https://cdn.akamai.steamstatic.com/steam/apps/367520/ss_82136e0539c878939c0c800c19e5cf666270a6c6.1920x1080.jpg)",
+    "rating": 10,
+    "created_at": "2026-08-03T13:01:37.330Z",
+    "updated_at": "2026-08-03T13:01:37.330Z"
   }
 },
 {
   "model": "games.game",
-  "pk": 3,
+  "pk": 7,
   "fields": {
-    "title": "asda",
-    "cover": "images/movie-cover/2025/12/15/sunset_background_digital_art-wallpaper-2880x1620.jpg"
+    "title": "Baba Is You",
+    "slug": "baba-is-you",
+    "steam_appid": 736260,
+    "cover": "",
+    "cover_url": "https://cdn.akamai.steamstatic.com/steam/apps/736260/library_600x900_2x.jpg",
+    "hero_url": "https://cdn.akamai.steamstatic.com/steam/apps/736260/library_hero.jpg",
+    "icon_url": "https://cdn.akamai.steamstatic.com/steam/apps/736260/header.jpg",
+    "is_favorite": false,
+    "category": "PUZZLES",
+    "playtime_hours": 28.0,
+    "last_played": "2 weeks ago",
+    "review_headline": "A Mind-Bending Rule Manipulation Masterpiece",
+    "review_content": "Baba Is You is a puzzle game where the rules you present as blocks in the level dictate how the world works. BABA IS YOU. ROCK IS PUSH. WATER IS SINK. You literally rewrite the game logic to solve impossible puzzles.\n\n![Baba Gameplay](https://cdn.akamai.steamstatic.com/steam/apps/736260/ss_265c711fa77c688390ca7d6e6f9edc9be830509a.1920x1080.jpg)",
+    "rating": 9,
+    "created_at": "2026-08-03T13:01:37.344Z",
+    "updated_at": "2026-08-03T13:01:37.345Z"
+  }
+},
+{
+  "model": "games.game",
+  "pk": 8,
+  "fields": {
+    "title": "Elden Ring",
+    "slug": "elden-ring",
+    "steam_appid": 1245620,
+    "cover": "",
+    "cover_url": "https://cdn.akamai.steamstatic.com/steam/apps/1245620/library_600x900_2x.jpg",
+    "hero_url": "https://cdn.akamai.steamstatic.com/steam/apps/1245620/library_hero.jpg",
+    "icon_url": "https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg",
+    "is_favorite": true,
+    "category": "FAVORITES",
+    "playtime_hours": 215.0,
+    "last_played": "Yesterday",
+    "review_headline": "Arise, Tarnished: The Pinnacle of Open-World Game Design",
+    "review_content": "FromSoftware redefined open-world action RPGs. The Lands Between rewards organic exploration like no other game in recent memory.\n\n### World Design\nEvery horizon holds a dungeon, boss, or secret legacy area to discover.\n\n![Elden Ring Panorama](https://cdn.akamai.steamstatic.com/steam/apps/1245620/ss_017b2b090a9058b8d007c08a9f62e3d36b28eb97.1920x1080.jpg)",
+    "rating": 10,
+    "created_at": "2026-08-03T13:01:37.358Z",
+    "updated_at": "2026-08-03T13:01:37.360Z"
+  }
+},
+{
+  "model": "games.game",
+  "pk": 9,
+  "fields": {
+    "title": "Firewatch",
+    "slug": "firewatch",
+    "steam_appid": 383870,
+    "cover": "",
+    "cover_url": "https://cdn.akamai.steamstatic.com/steam/apps/383870/library_600x900_2x.jpg",
+    "hero_url": "https://cdn.akamai.steamstatic.com/steam/apps/383870/library_hero.jpg",
+    "icon_url": "https://cdn.akamai.steamstatic.com/steam/apps/383870/header.jpg",
+    "is_favorite": false,
+    "category": "STORY",
+    "playtime_hours": 8.5,
+    "last_played": "1 month ago",
+    "review_headline": "A Stunning Narrative Mystery in the Wyoming Wilderness",
+    "review_content": "Firewatch is a single-player first-person mystery set in the Wyoming wilderness, where your only emotional lifeline is the person on the other end of a handheld radio.\n\n![Firewatch Sunset](https://cdn.akamai.steamstatic.com/steam/apps/383870/ss_21ef95180f681a951c6e1cb2f5b66d48243ec47d.1920x1080.jpg)",
+    "rating": 8,
+    "created_at": "2026-08-03T13:01:37.374Z",
+    "updated_at": "2026-08-03T13:01:37.376Z"
   }
 },
 {
