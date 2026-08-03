@@ -1,5 +1,6 @@
 import requests
 from decouple import config
+from django.db.models import Q
 from django.shortcuts import render
 from games.models import Game
 from games.serializer import GameSerializer
@@ -10,9 +11,14 @@ from rest_framework.response import Response
 
 
 class CreateListGame(generics.ListCreateAPIView):
-    queryset = Game.objects.all().order_by("-is_favorite", "title")
     serializer_class = GameSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Game.objects.filter(
+            Q(playtime_hours__gte=0.1) | Q(platform="EPIC")
+        ).order_by("-is_favorite", "title")
+
 
 
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -89,8 +95,7 @@ def sync_steam_library(request):
         data = res.json()
 
         games_list = data.get("response", {}).get("games", [])
-        synced_count = 0
-
+        synced_appids = []
         for item in games_list:
             appid = item.get("appid")
             name = item.get("name")
@@ -100,6 +105,8 @@ def sync_steam_library(request):
             # Filter threshold: minimum 0.1 hours
             if playtime_hours < 0.1:
                 continue
+
+            synced_appids.append(appid)
 
             icon_hash = item.get("img_icon_url")
             icon_url = f"http://media.steampowered.com/steamcommunity/public/images/apps/{appid}/{icon_hash}.jpg" if icon_hash else f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/header.jpg"
@@ -114,7 +121,6 @@ def sync_steam_library(request):
                     "icon_url": icon_url,
                     "store_url": f"https://store.steampowered.com/app/{appid}/",
                     "playtime_hours": playtime_hours,
-
                     "review_headline": f"My review of {name}",
                     "review_content": f"Played {playtime_hours} hours on Steam.",
                     "rating": 9,
@@ -130,9 +136,17 @@ def sync_steam_library(request):
 
             synced_count += 1
 
-        return Response({"message": f"Successfully synced {synced_count} games (>= 0.1 hrs played) from Steam!", "total_owned": len(games_list)})
+        # Delete any Steam games from database that do not meet the >= 0.1 hrs threshold anymore
+        deleted_count, _ = Game.objects.filter(platform="STEAM").exclude(steam_appid__in=synced_appids).delete()
+
+        return Response({
+            "message": f"Successfully synced {synced_count} games (>= 0.1 hrs played) from Steam!",
+            "cleaned_up_unplayed": deleted_count,
+            "total_owned": len(games_list)
+        })
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 @api_view(["POST"])
