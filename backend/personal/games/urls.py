@@ -6,6 +6,8 @@ urlpatterns = [
     path("games/", games.CreateListGame.as_view(), name="games"),
     path("games/<int:pk>/", games.GameDetailView.as_view(), name="game-detail"),
     path("games/steam/<int:appid>/", games.fetch_steam_game, name="fetch-steam-game"),
+    path("games/sync-steam/", games.sync_steam_library, name="sync-steam-library"),
+
 
     path("projects/", projects.CreateListProject.as_view(), name="projects"),
     path(
