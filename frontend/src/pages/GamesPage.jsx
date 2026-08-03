@@ -233,9 +233,21 @@ export default function GamesPage() {
 
                   {/* Action / Stats Bar */}
                   <div className="steam-action-bar">
-                    <button className="steam-play-btn">
+                    <a
+                      href={
+                        selectedGame.store_url ||
+                        (selectedGame.steam_appid
+                          ? `https://store.steampowered.com/app/${selectedGame.steam_appid}/`
+                          : "#")
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="steam-play-btn"
+                      style={{ textDecoration: "none" }}
+                    >
                       <span>▶</span> PLAY
-                    </button>
+                    </a>
+
                     <div className="steam-stat-box">
                       <span className="steam-stat-label">TIME PLAYED</span>
                       <span className="steam-stat-value">

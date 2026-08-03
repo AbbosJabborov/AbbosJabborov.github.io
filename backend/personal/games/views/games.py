@@ -112,7 +112,9 @@ def sync_steam_library(request):
                     "cover_url": f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/library_600x900_2x.jpg",
                     "hero_url": f"https://cdn.akamai.steamstatic.com/steam/apps/{appid}/library_hero.jpg",
                     "icon_url": icon_url,
+                    "store_url": f"https://store.steampowered.com/app/{appid}/",
                     "playtime_hours": playtime_hours,
+
                     "review_headline": f"My review of {name}",
                     "review_content": f"Played {playtime_hours} hours on Steam.",
                     "rating": 9,

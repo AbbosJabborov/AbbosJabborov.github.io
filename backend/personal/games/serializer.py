@@ -17,7 +17,9 @@ class GameSerializer(serializers.ModelSerializer):
             "cover_url",
             "hero_url",
             "icon_url",
+            "store_url",
             "is_favorite",
+
             "category",
             "playtime_hours",
             "last_played",

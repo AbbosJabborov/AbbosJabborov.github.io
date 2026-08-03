@@ -17,6 +17,7 @@ class Game(models.Model):
     cover_url = models.URLField(max_length=500, blank=True, null=True)
     hero_url = models.URLField(max_length=500, blank=True, null=True)
     icon_url = models.URLField(max_length=500, blank=True, null=True)
+    store_url = models.URLField(max_length=500, blank=True, null=True, help_text="Link to game store page")
     
     is_favorite = models.BooleanField(default=False)
     category = models.CharField(max_length=50, default="FAVORITES")
@@ -44,7 +45,7 @@ class Game(models.Model):
                 counter += 1
             self.slug = slug
         
-        # Auto fill Steam CDN URLs if steam_appid is provided
+        # Auto fill Steam CDN URLs and store URL if steam_appid is provided
         if self.steam_appid:
             if not self.cover_url:
                 self.cover_url = f"https://cdn.akamai.steamstatic.com/steam/apps/{self.steam_appid}/library_600x900_2x.jpg"
@@ -52,8 +53,11 @@ class Game(models.Model):
                 self.hero_url = f"https://cdn.akamai.steamstatic.com/steam/apps/{self.steam_appid}/library_hero.jpg"
             if not self.icon_url:
                 self.icon_url = f"https://cdn.akamai.steamstatic.com/steam/apps/{self.steam_appid}/header.jpg"
+            if not self.store_url:
+                self.store_url = f"https://store.steampowered.com/app/{self.steam_appid}/"
 
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return self.title
