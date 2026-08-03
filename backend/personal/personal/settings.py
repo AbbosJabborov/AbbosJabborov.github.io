@@ -56,16 +56,17 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = str(
     config(
         "CORS_ALLOWED_ORIGINS",
-        default="http://localhost:3000,http://localhost:5173,https://abbosjabborov.github.io",
+        default="http://localhost:3000,http://localhost:5173,https://abbosjabborov.github.io,https://claive.abbosjabborov12.workers.dev",
     )
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = str(
     config(
         "CSRF_TRUSTED_ORIGINS",
-        default="https://abbosjabborov.github.io,https://unconverging-daxton-pedagogically.ngrok-free.dev",
+        default="https://abbosjabborov.github.io,https://unconverging-daxton-pedagogically.ngrok-free.dev,https://claive.abbosjabborov12.workers.dev",
     )
 ).split(",")
+
 
 ROOT_URLCONF = "personal.urls"
 
