@@ -16,12 +16,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-default-key")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = str(
-    config(
-        "ALLOWED_HOSTS",
-        default="127.0.0.1,localhost,app,django_backend,claive.uz,www.claive.uz,.claive.uz",
-    )
-).split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in str(
+        config(
+            "ALLOWED_HOSTS",
+            default="127.0.0.1,localhost,app,django_backend,claive.uz,www.claive.uz,api.claive.uz,.claive.uz,api-personal.169.58.100.190.sslip.io",
+        )
+    ).split(",")
+    if host.strip()
+]
 
 # Reverse proxy headers for Nginx Proxy Manager / HTTPS
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -58,7 +62,7 @@ CORS_ALLOWED_ORIGINS = [
     for origin in str(
         config(
             "CORS_ALLOWED_ORIGINS",
-            default="http://localhost:3000,http://localhost:5173,https://abbosjabborov.github.io,https://claive.abbosjabborov12.workers.dev,https://claive.uz,https://www.claive.uz",
+            default="http://localhost:3000,http://localhost:5173,https://abbosjabborov.github.io,https://claive.abbosjabborov12.workers.dev,https://claive.uz,https://www.claive.uz,https://api.claive.uz",
         )
     ).split(",")
     if origin.strip()
@@ -69,7 +73,7 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in str(
         config(
             "CSRF_TRUSTED_ORIGINS",
-            default="https://abbosjabborov.github.io,https://unconverging-daxton-pedagogically.ngrok-free.dev,https://claive.abbosjabborov12.workers.dev,https://api-personal.169.58.100.190.sslip.io,https://claive.uz,https://www.claive.uz",
+            default="https://abbosjabborov.github.io,https://unconverging-daxton-pedagogically.ngrok-free.dev,https://claive.abbosjabborov12.workers.dev,https://api-personal.169.58.100.190.sslip.io,https://claive.uz,https://www.claive.uz,https://api.claive.uz",
         )
     ).split(",")
     if origin.strip()
