@@ -94,9 +94,10 @@ def sync_steam_library(request):
         res = requests.get(url, timeout=10)
         data = res.json()
 
-        games_list = data.get("response", {}).get("games", [])
+        synced_count = 0
         synced_appids = []
         for item in games_list:
+
             appid = item.get("appid")
             name = item.get("name")
             playtime_mins = item.get("playtime_forever", 0)
