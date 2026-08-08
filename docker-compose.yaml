@@ -4,13 +4,18 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-${POSTGRES_DB:-personal_db}}
+      POSTGRES_USER: ${DB_USER:-${POSTGRES_USER:-personal_user}}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-${POSTGRES_PASSWORD:-personal_password_change_me}}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-$${DB_USER:-personal_user}} -d $${POSTGRES_DB:-$${DB_NAME:-personal_db}}"]
+      test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
       timeout: 5s
       retries: 5
+
 
     networks:
       - internal
