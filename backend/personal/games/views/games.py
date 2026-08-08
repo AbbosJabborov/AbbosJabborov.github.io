@@ -93,10 +93,12 @@ def sync_steam_library(request):
         url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={api_key}&steamid={steam_id}&format=json&include_appinfo=true&include_played_free_games=true"
         res = requests.get(url, timeout=10)
         data = res.json()
+        games_list = data.get("response", {}).get("games", [])
 
         synced_count = 0
         synced_appids = []
         for item in games_list:
+
 
             appid = item.get("appid")
             name = item.get("name")
