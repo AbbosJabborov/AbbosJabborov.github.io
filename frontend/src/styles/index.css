@@ -1,42 +1,112 @@
+/* Motiva Sans (Official Steam Typography) */
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Motiva Sans';
+  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-ExtraBold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+}
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --steam-bg-dark: #101822;
+  --steam-bg-main: #1b2838;
+  --steam-bg-card: #171a21;
+  --steam-bg-card-alt: rgba(23, 26, 33, 0.85);
+  --steam-border: #2a3f5a;
+  --steam-border-glow: #66c0f4;
+  --steam-cyan: #66c0f4;
+  --steam-blue-active: #1a9fff;
+  --steam-green: #90ba3c;
+  --steam-green-btn: linear-gradient(90deg, #a4d007 0%, #537009 100%);
+  --steam-text-muted: #8f98a0;
+  --steam-text-light: #c6d4df;
+  --steam-text-white: #ffffff;
+  --steam-online-blue: #57cbde;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #111313 0%, #181b1b 100%);
-    color: #e4e7e7;
-    font-family: "Times New Roman", Times, serif;
-    min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: var(--steam-bg-main);
+  background-image: radial-gradient(circle at 50% 0%, #1b2838 0%, #101822 100%);
+  background-attachment: fixed;
+  color: var(--steam-text-light);
+  font-family: 'Motiva Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
-    color: inherit;
-    text-decoration: none;
+  color: inherit;
+  text-decoration: none;
 }
 
 button {
-    font-family: "Times New Roman", Times, serif;
-    cursor: pointer;
+  font-family: 'Motiva Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+}
+
+/* Custom Steam Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #101822;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a3f5a;
+  border-radius: 4px;
+  border: 2px solid #101822;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #66c0f4;
 }
 
 .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    font-size: 1.5rem;
-    color: #949e9e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  font-size: 1.5rem;
+  color: var(--steam-text-muted);
 }
 
 .error {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    font-size: 1.2rem;
-    color: #ff6b6b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  font-size: 1.2rem;
+  color: #ff6b6b;
 }
+

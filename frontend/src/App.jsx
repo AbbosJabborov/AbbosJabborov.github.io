@@ -13,12 +13,9 @@ import "./styles/projects.css";
 import "./styles/shelves.css";
 
 function AppContent() {
-  const location = useLocation();
-  const isGamesPage = location.pathname === "/games";
-
   return (
     <>
-      {!isGamesPage && <Navbar />}
+      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/games" element={<GamesPage />} />

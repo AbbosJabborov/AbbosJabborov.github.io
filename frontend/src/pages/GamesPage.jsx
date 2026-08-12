@@ -87,31 +87,6 @@ export default function GamesPage() {
 
   return (
     <div className="steam-container">
-      {/* Top Steam Header Bar */}
-      <div className="steam-topbar">
-        <div className="steam-nav-links">
-          <Link to="/" className="steam-nav-item">HOME</Link>
-          <span className="steam-nav-item active">LIBRARY</span>
-        </div>
-        <a
-          href={steamProfile.profileurl || "https://steamcommunity.com/id/clevercap/"}
-          target="_blank"
-          rel="noreferrer"
-          className="steam-user-profile"
-          style={{ textDecoration: "none" }}
-        >
-          <img
-            src={steamProfile.avatar}
-            alt={steamProfile.personaname}
-            className="steam-avatar"
-            onError={(e) => {
-              e.target.src = "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg";
-            }}
-          />
-          <span>{steamProfile.personaname?.toUpperCase() || "CLEVERCAP"}</span>
-        </a>
-      </div>
-
       <div className="steam-body">
         {/* Left Sidebar */}
         <div className="steam-sidebar">
