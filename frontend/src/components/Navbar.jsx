@@ -13,8 +13,32 @@ export default function Navbar() {
   const leftEyeRef = useRef(null);
   const rightEyeRef = useRef(null);
 
+  const [steamProfile, setSteamProfile] = useState({
+    personaname: "clevercap",
+    avatar: "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg",
+    profileurl: "https://steamcommunity.com/id/clevercap/",
+  });
+
+  useEffect(() => {
+    async function loadSteamProfile() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/steam/profile/`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.personaname && data.avatar) {
+            setSteamProfile(data);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch steam profile", e);
+      }
+    }
+    loadSteamProfile();
+  }, []);
+
   useEffect(() => {
     // Load last track from localStorage on mount
+
     const stored = localStorage.getItem("lastSpotifyTrack");
     if (stored) {
       try {
@@ -249,11 +273,17 @@ export default function Navbar() {
             </div>
           )}
 
-          <Link to="/" className="steam-user-profile-badge">
+          <a
+            href={steamProfile.profileurl || "https://steamcommunity.com/id/clevercap/"}
+            target="_blank"
+            rel="noreferrer"
+            className="steam-user-profile-badge"
+            title="Open Steam Profile"
+          >
             <div className="user-avatar-frame">
               <img
-                src="/steam_avatar.png"
-                alt="Claive"
+                src={steamProfile.avatar || "/steam_avatar.png"}
+                alt={steamProfile.personaname || "clevercap"}
                 className="user-avatar-img"
                 onError={(e) => {
                   e.target.src =
@@ -262,10 +292,11 @@ export default function Navbar() {
               />
             </div>
             <div className="user-details">
-              <span className="user-name">claive</span>
+              <span className="user-name">{steamProfile.personaname || "clevercap"}</span>
               <span className="user-level">Lvl 42</span>
             </div>
-          </Link>
+          </a>
+
         </div>
       </nav>
 

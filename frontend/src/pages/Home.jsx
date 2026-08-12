@@ -12,21 +12,43 @@ export default function Home() {
   const [authorName, setAuthorName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch comments from backend notes API
+  const [steamProfile, setSteamProfile] = useState({
+    personaname: "Abbos Jabborov",
+    avatar: "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg",
+    profileurl: "https://steamcommunity.com/id/clevercap/",
+  });
+  const [featuredGames, setFeaturedGames] = useState([]);
+
   useEffect(() => {
-    async function loadNotes() {
+    async function loadProfileData() {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/notes/`);
-        if (res.ok) {
-          const data = await res.json();
-          setComments(data);
+        const [profRes, gamesRes, notesRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/steam/profile/`),
+          fetch(`${API_BASE_URL}/api/games/`),
+          fetch(`${API_BASE_URL}/api/notes/`),
+        ]);
+
+        if (profRes.ok) {
+          const pData = await profRes.json();
+          if (pData.personaname && pData.avatar) {
+            setSteamProfile(pData);
+          }
+        }
+        if (gamesRes.ok) {
+          const gData = await gamesRes.json();
+          setFeaturedGames(gData);
+        }
+        if (notesRes.ok) {
+          const nData = await notesRes.json();
+          setComments(nData);
         }
       } catch (err) {
-        console.warn("Failed to load profile comments", err);
+        console.warn("Failed to load profile data", err);
       }
     }
-    loadNotes();
+    loadProfileData();
   }, []);
+
 
   const triggerToast = (msg) => {
     setToastMessage(msg);
@@ -90,8 +112,8 @@ export default function Home() {
           <div className="steam-avatar-box">
             <div className="steam-avatar-frame-glow">
               <img
-                src="/steam_avatar.png"
-                alt="Abbos Jabborov"
+                src={steamProfile.avatar || "/steam_avatar.png"}
+                alt={steamProfile.personaname || "Abbos Jabborov"}
                 className="steam-avatar-large"
                 onError={(e) => {
                   e.target.src =
@@ -105,12 +127,13 @@ export default function Home() {
           {/* User Headline & Bio */}
           <div className="steam-user-headline">
             <div className="steam-user-title-row">
-              <h1 className="steam-persona-name">Abbos Jabborov</h1>
-              <span className="steam-handle">claive</span>
+              <h1 className="steam-persona-name">{steamProfile.personaname || "Abbos Jabborov"}</h1>
+              <span className="steam-handle">clevercap</span>
               <span className="steam-location-flag" title="Tashkent, Uzbekistan">
                 🇺🇿 Uzbekistan
               </span>
             </div>
+
 
             {/* Steam Summary Bio Box */}
             <div className="steam-summary-box">
@@ -270,7 +293,43 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Showcase 2: Rarest Achievements */}
+          {/* Showcase 2: Game Collector Showcase */}
+          {featuredGames.length > 0 && (
+            <div className="steam-showcase-box">
+              <div className="steam-showcase-header">
+                <span className="showcase-title">GAME COLLECTOR SHOWCASE</span>
+                <span className="showcase-count">{featuredGames.length} GAMES OWNED</span>
+              </div>
+
+              <div className="steam-game-collector-grid">
+                {featuredGames.slice(0, 10).map((game) => (
+                  <a
+                    key={game.id || game.steam_appid}
+                    href={game.store_url || `https://store.steampowered.com/app/${game.steam_appid}/`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="steam-collector-item"
+                    title={`${game.title} - ${game.playtime_hours} hrs played`}
+                  >
+                    <img
+                      src={game.cover_url || game.icon_url}
+                      alt={game.title}
+                      className="collector-cover"
+                      onError={(e) => {
+                        e.target.src = game.icon_url || "https://cdn.akamai.steamstatic.com/steam/apps/440/header.jpg";
+                      }}
+                    />
+                    <div className="collector-overlay">
+                      <span className="collector-hours">{game.playtime_hours} hrs</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Showcase 3: Rarest Achievements */}
+
           <div className="steam-showcase-box">
             <div className="steam-showcase-header">
               <span className="showcase-title">RAREST ACHIEVEMENTS UNLOCKED</span>
