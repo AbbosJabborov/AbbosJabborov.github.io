@@ -111,45 +111,7 @@ export default function Navbar() {
   const displayTrack = track?.is_playing ? track : lastTrack;
   const isPlaying = track?.is_playing;
 
-  const getSubNavItems = () => {
-    const path = location.pathname;
-    if (path === "/") {
-      return [
-        { label: "PROFILE", path: "/", active: true },
-        { label: "SHOWCASE", path: "/#showcase" },
-        { label: "ACTIVITIES", path: "/posts" },
-        { label: "NOTES WALL", path: "/notes" },
-        { label: "GAMES", path: "/games" },
-      ];
-    } else if (path === "/projects") {
-      return [
-        { label: "STORE HOME", path: "/projects", active: true },
-        { label: "FEATURED SHOWCASE", path: "/" },
-        { label: "GAMES", path: "/games" },
-      ];
-    } else if (path === "/games") {
-      return [
-        { label: "MY LIBRARY", path: "/games", active: true },
-        { label: "FAVORITES", path: "/games" },
-        { label: "STEAM PROFILE", path: "/" },
-      ];
-    } else if (path === "/notes") {
-      return [
-        { label: "COMMUNITY WALL", path: "/notes", active: true },
-        { label: "LEAVE A NOTE", path: "/notes" },
-        { label: "PROFILE", path: "/" },
-      ];
-    } else if (path === "/posts") {
-      return [
-        { label: "NEWS & POSTS", path: "/posts", active: true },
-        { label: "PROFILE", path: "/" },
-      ];
-    }
-    return [
-      { label: "PROFILE", path: "/" },
-      { label: "PROJECTS", path: "/projects" },
-    ];
-  };
+
 
   return (
     <header className="steam-header-wrapper">
@@ -299,22 +261,8 @@ export default function Navbar() {
 
         </div>
       </nav>
-
-      {/* Sub Header Navigation Bar */}
-      <div className="steam-sub-navbar">
-        <div className="steam-subnav-container">
-          {getSubNavItems().map((item, idx) => (
-            <Link
-              key={idx}
-              to={item.path}
-              className={`steam-subnav-item ${item.active ? "active" : ""}`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </div>
     </header>
   );
 }
+
 
