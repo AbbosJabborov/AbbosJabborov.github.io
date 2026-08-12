@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import TypingAnimation from "../components/TypingAnimation";
 import API_BASE_URL from "../config/api";
+
+const DEFAULT_CUSTOMIZATION = {
+  personaName: "Abbos Jabborov",
+  realName: "clevercap",
+  location: "Tashkent, Uzbekistan",
+  bio: "Full-Stack Software Engineer & Web Developer. Building high-performance web apps, interactive engines, and clean UI/UX systems.",
+  level: 42,
+  themeBg: "default", // 'default' | 'midnight' | 'cyberpunk' | 'space' | 'sunset'
+  showcaseType: "projects", // 'projects' | 'games' | 'custom'
+  customShowcaseTitle: "ABOUT ME & HIGHLIGHTS",
+  customShowcaseBody: "Welcome to my official Steam profile! I build web applications, explore game development, and code full-stack projects.",
+};
 
 export default function Home() {
   const [toastMessage, setToastMessage] = useState(null);
@@ -12,12 +23,26 @@ export default function Home() {
   const [authorName, setAuthorName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Steam API Profile data & games
   const [steamProfile, setSteamProfile] = useState({
     personaname: "Abbos Jabborov",
     avatar: "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg",
     profileurl: "https://steamcommunity.com/id/clevercap/",
   });
   const [featuredGames, setFeaturedGames] = useState([]);
+
+  // Profile Customization state stored in localStorage
+  const [customData, setCustomData] = useState(() => {
+    try {
+      const saved = localStorage.getItem("steamProfileCustomization");
+      return saved ? JSON.parse(saved) : DEFAULT_CUSTOMIZATION;
+    } catch {
+      return DEFAULT_CUSTOMIZATION;
+    }
+  });
+
+  // Form edit state for modal
+  const [editForm, setEditForm] = useState(customData);
 
   useEffect(() => {
     async function loadProfileData() {
@@ -49,10 +74,21 @@ export default function Home() {
     loadProfileData();
   }, []);
 
-
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleSaveCustomization = (e) => {
+    e.preventDefault();
+    setCustomData(editForm);
+    try {
+      localStorage.setItem("steamProfileCustomization", JSON.stringify(editForm));
+    } catch (err) {
+      console.warn("Failed to save customization", err);
+    }
+    setShowEditModal(false);
+    triggerToast("Profile customization saved!");
   };
 
   const handlePostComment = async (e) => {
@@ -77,7 +113,6 @@ export default function Home() {
         setAuthorName("");
         triggerToast("Comment posted on profile wall!");
       } else {
-        // Fallback local update
         const fallbackNote = {
           id: Date.now(),
           message: newComment,
@@ -96,24 +131,22 @@ export default function Home() {
     }
   };
 
+  const themeClass = `theme-${customData.themeBg || "default"}`;
+
   return (
-    <div className="steam-profile-page">
+    <div className={`steam-profile-page ${themeClass}`}>
       {/* Toast Notification */}
       {toastMessage && <div className="steam-toast">{toastMessage}</div>}
 
       {/* Steam Profile Header Banner Container */}
       <div className="steam-profile-header-wrapper">
-        <div
-          className="steam-profile-bg"
-          style={{ backgroundImage: `url('/steam_bg.png')` }}
-        />
         <div className="steam-profile-header-content">
           {/* Avatar Container */}
           <div className="steam-avatar-box">
-            <div className="steam-avatar-frame-glow">
+            <div className="steam-avatar-frame-solid">
               <img
                 src={steamProfile.avatar || "/steam_avatar.png"}
-                alt={steamProfile.personaname || "Abbos Jabborov"}
+                alt={customData.personaName}
                 className="steam-avatar-large"
                 onError={(e) => {
                   e.target.src =
@@ -127,34 +160,26 @@ export default function Home() {
           {/* User Headline & Bio */}
           <div className="steam-user-headline">
             <div className="steam-user-title-row">
-              <h1 className="steam-persona-name">{steamProfile.personaname || "Abbos Jabborov"}</h1>
-              <span className="steam-handle">clevercap</span>
-              <span className="steam-location-flag" title="Tashkent, Uzbekistan">
-                🇺🇿 Uzbekistan
-              </span>
+              <h1 className="steam-persona-name">
+                {customData.personaName || steamProfile.personaname}
+              </h1>
+              <span className="steam-handle">{customData.realName || "clevercap"}</span>
+              {customData.location && (
+                <span className="steam-location-flag">
+                  🇺🇿 {customData.location}
+                </span>
+              )}
             </div>
-
 
             {/* Steam Summary Bio Box */}
             <div className="steam-summary-box">
-              <div className="steam-typing-wrapper">
-                <TypingAnimation />
-              </div>
               <div className="steam-bio-details">
-                <p>
-                  👋 <strong>Full-Stack Software Engineer & Web Developer.</strong>
-                </p>
-                <p>
-                  Building high-performance web apps, interactive engines, and
-                  clean UI/UX systems.
-                </p>
+                <p>{customData.bio}</p>
                 <div className="steam-tech-badges">
                   <span className="tech-tag">React 19</span>
-                  <span className="tech-tag">JavaScript</span>
-                  <span className="tech-tag">Python</span>
-                  <span className="tech-tag">Django REST</span>
+                  <span className="tech-tag">Python / Django</span>
                   <span className="tech-tag">Docker</span>
-                  <span className="tech-tag">Cloudflare Workers</span>
+                  <span className="tech-tag">Cloudflare</span>
                 </div>
               </div>
             </div>
@@ -162,15 +187,15 @@ export default function Home() {
 
           {/* Steam Level & Profile Actions */}
           <div className="steam-profile-right-actions">
-            <div className="steam-level-container" title="Level 42 Leader">
+            <div className="steam-level-container">
               <span className="level-label">Level</span>
-              <div className="level-badge-circle">42</div>
+              <div className="level-badge-circle">{customData.level}</div>
             </div>
 
             <div className="steam-badge-preview-box">
               <span className="badge-icon">🏆</span>
               <div className="badge-info">
-                <span className="badge-title">Community Leader</span>
+                <span className="badge-title">Community Pillar</span>
                 <span className="badge-xp">4,200 XP</span>
               </div>
             </div>
@@ -178,7 +203,10 @@ export default function Home() {
             <div className="steam-action-buttons-group">
               <button
                 className="steam-btn primary"
-                onClick={() => setShowEditModal(true)}
+                onClick={() => {
+                  setEditForm(customData);
+                  setShowEditModal(true);
+                }}
               >
                 ⚙️ Edit Profile
               </button>
@@ -209,92 +237,84 @@ export default function Home() {
 
       {/* Main Profile Body Grid (2 Columns) */}
       <div className="steam-profile-body-container">
-        {/* Left Column (Showcases & Comments) */}
+        {/* Left Column (Selected Showcase & Comments) */}
         <div className="steam-main-col">
-          {/* Showcase 1: Featured Projects */}
-          <div className="steam-showcase-box" id="showcase">
-            <div className="steam-showcase-header">
-              <span className="showcase-title">FEATURED PROJECTS SHOWCASE</span>
-              <span className="showcase-count">3 ITEMS</span>
-            </div>
-
-            <div className="steam-projects-grid">
-              {/* Project 1 */}
-              <div className="steam-project-card">
-                <div className="project-banner zakoweb">
-                  <span className="project-badge">MULTIPLAYER GAME</span>
-                  <div className="project-overlay-glow" />
-                </div>
-                <div className="project-details">
-                  <h3 className="project-name">Zakoweb Online</h3>
-                  <p className="project-desc">
-                    Real-time multiplayer quiz game platform with live answer
-                    masking, room lifecycle management, and WebSocket feeds.
-                  </p>
-                  <div className="project-stats-row">
-                    <span>⏱ 140 hrs logged</span>
-                    <span>🏆 100% Achievements</span>
-                  </div>
-                  <div className="project-action">
-                    <Link to="/projects" className="steam-play-btn-green">
-                      <span>▶</span> LAUNCH PROJECT
-                    </Link>
-                  </div>
-                </div>
+          {/* Custom Showcase Selector */}
+          {customData.showcaseType === "projects" && (
+            <div className="steam-showcase-box" id="showcase">
+              <div className="steam-showcase-header">
+                <span className="showcase-title">FEATURED PROJECTS SHOWCASE</span>
+                <span className="showcase-count">3 ITEMS</span>
               </div>
 
-              {/* Project 2 */}
-              <div className="steam-project-card">
-                <div className="project-banner plate">
-                  <span className="project-badge">AI ASSISTANT</span>
-                  <div className="project-overlay-glow" />
-                </div>
-                <div className="project-details">
-                  <h3 className="project-name">Plate. AI Culinary</h3>
-                  <p className="project-desc">
-                    AI-powered cooking & grocery assistant with ingredient
-                    substitution tailored for local stores in Uzbekistan.
-                  </p>
-                  <div className="project-stats-row">
-                    <span>⏱ 95 hrs logged</span>
-                    <span>🏆 90% Achievements</span>
+              <div className="steam-projects-grid">
+                <div className="steam-project-card">
+                  <div className="project-banner zakoweb">
+                    <span className="project-badge">MULTIPLAYER GAME</span>
                   </div>
-                  <div className="project-action">
-                    <Link to="/projects" className="steam-play-btn-green">
-                      <span>▶</span> LAUNCH PROJECT
-                    </Link>
+                  <div className="project-details">
+                    <h3 className="project-name">Zakoweb Online</h3>
+                    <p className="project-desc">
+                      Real-time multiplayer quiz game platform with live answer
+                      masking and room lifecycle management.
+                    </p>
+                    <div className="project-stats-row">
+                      <span>⏱ 140 hrs logged</span>
+                    </div>
+                    <div className="project-action">
+                      <Link to="/projects" className="steam-play-btn-green">
+                        <span>▶</span> LAUNCH PROJECT
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Project 3 */}
-              <div className="steam-project-card">
-                <div className="project-banner portfolio">
-                  <span className="project-badge">WEB PLATFORM</span>
-                  <div className="project-overlay-glow" />
-                </div>
-                <div className="project-details">
-                  <h3 className="project-name">Claive.uz Portfolio</h3>
-                  <p className="project-desc">
-                    Custom Steam UI replica built with React 19, Django REST, and
-                    Dockerized backend services.
-                  </p>
-                  <div className="project-stats-row">
-                    <span>⏱ 210 hrs logged</span>
-                    <span>🏆 100% Achievements</span>
+                <div className="steam-project-card">
+                  <div className="project-banner plate">
+                    <span className="project-badge">AI ASSISTANT</span>
                   </div>
-                  <div className="project-action">
-                    <Link to="/games" className="steam-play-btn-green">
-                      <span>▶</span> OPEN LIBRARY
-                    </Link>
+                  <div className="project-details">
+                    <h3 className="project-name">Plate. AI Culinary</h3>
+                    <p className="project-desc">
+                      AI-powered cooking & grocery assistant with ingredient
+                      substitution tailored for local stores in Uzbekistan.
+                    </p>
+                    <div className="project-stats-row">
+                      <span>⏱ 95 hrs logged</span>
+                    </div>
+                    <div className="project-action">
+                      <Link to="/projects" className="steam-play-btn-green">
+                        <span>▶</span> LAUNCH PROJECT
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="steam-project-card">
+                  <div className="project-banner portfolio">
+                    <span className="project-badge">WEB PLATFORM</span>
+                  </div>
+                  <div className="project-details">
+                    <h3 className="project-name">Claive.uz Portfolio</h3>
+                    <p className="project-desc">
+                      Custom Steam UI portfolio built with React 19, Django REST, and
+                      Dockerized backend services.
+                    </p>
+                    <div className="project-stats-row">
+                      <span>⏱ 210 hrs logged</span>
+                    </div>
+                    <div className="project-action">
+                      <Link to="/games" className="steam-play-btn-green">
+                        <span>▶</span> OPEN LIBRARY
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Showcase 2: Game Collector Showcase */}
-          {featuredGames.length > 0 && (
+          {customData.showcaseType === "games" && featuredGames.length > 0 && (
             <div className="steam-showcase-box">
               <div className="steam-showcase-header">
                 <span className="showcase-title">GAME COLLECTOR SHOWCASE</span>
@@ -316,7 +336,9 @@ export default function Home() {
                       alt={game.title}
                       className="collector-cover"
                       onError={(e) => {
-                        e.target.src = game.icon_url || "https://cdn.akamai.steamstatic.com/steam/apps/440/header.jpg";
+                        e.target.src =
+                          game.icon_url ||
+                          "https://cdn.akamai.steamstatic.com/steam/apps/440/header.jpg";
                       }}
                     />
                     <div className="collector-overlay">
@@ -328,104 +350,55 @@ export default function Home() {
             </div>
           )}
 
-          {/* Showcase 3: Rarest Achievements */}
-
-          <div className="steam-showcase-box">
-            <div className="steam-showcase-header">
-              <span className="showcase-title">RAREST ACHIEVEMENTS UNLOCKED</span>
-              <span className="showcase-count">6 OF 15</span>
-            </div>
-
-            <div className="steam-achievements-grid">
-              <div className="achievement-item" title="Written 100,000+ lines of code">
-                <div className="achievement-icon gold">🧙‍♂️</div>
-                <div className="achievement-info">
-                  <span className="achieve-title">Code Wizard</span>
-                  <span className="achieve-desc">Written 100k+ lines of clean code</span>
-                  <span className="achieve-unlocked">Unlocked Aug 12</span>
-                </div>
+          {customData.showcaseType === "custom" && (
+            <div className="steam-showcase-box">
+              <div className="steam-showcase-header">
+                <span className="showcase-title">{customData.customShowcaseTitle.toUpperCase()}</span>
               </div>
-
-              <div className="achievement-item" title="Deployed production servers">
-                <div className="achievement-icon diamond">🚀</div>
-                <div className="achievement-info">
-                  <span className="achieve-title">Deploy Master</span>
-                  <span className="achieve-desc">VPS & Cloudflare deployment</span>
-                  <span className="achieve-unlocked">Unlocked Aug 2</span>
-                </div>
-              </div>
-
-              <div className="achievement-item" title="Steam UI Pixel Perfect">
-                <div className="achievement-icon cyan">🎨</div>
-                <div className="achievement-info">
-                  <span className="achieve-title">Steam Artisan</span>
-                  <span className="achieve-desc">Pixel-perfect Steam UI replication</span>
-                  <span className="achieve-unlocked">Unlocked Today</span>
-                </div>
-              </div>
-
-              <div className="achievement-item" title="Solved 500+ bugs">
-                <div className="achievement-icon green">⚡</div>
-                <div className="achievement-info">
-                  <span className="achieve-title">Bug Terminator</span>
-                  <span className="achieve-desc">Resolved 500+ complex issues</span>
-                  <span className="achieve-unlocked">Unlocked Jul 31</span>
-                </div>
-              </div>
-
-              <div className="achievement-item" title="Listened to 1,000+ hrs of synthwave">
-                <div className="achievement-icon purple">🎧</div>
-                <div className="achievement-info">
-                  <span className="achieve-title">Synthwave Coder</span>
-                  <span className="achieve-desc">1,000+ Spotify coding hours</span>
-                  <span className="achieve-unlocked">Unlocked Jul 29</span>
-                </div>
-              </div>
-
-              <div className="achievement-item" title="Built real-time engines">
-                <div className="achievement-icon red">🌐</div>
-                <div className="achievement-info">
-                  <span className="achieve-title">Network Architect</span>
-                  <span className="achieve-desc">Built real-time WebSocket feeds</span>
-                  <span className="achieve-unlocked">Unlocked Apr 27</span>
-                </div>
+              <div className="custom-showcase-body">
+                <p>{customData.customShowcaseBody}</p>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Showcase 3: Recent Activity Feed */}
-          <div className="steam-showcase-box">
-            <div className="steam-showcase-header">
-              <span className="showcase-title">RECENT ACTIVITY</span>
-              <span className="showcase-count">34.5 hrs past 2 weeks</span>
-            </div>
-
-            <div className="steam-activity-list">
-              <div className="activity-item">
-                <span className="activity-icon">🎮</span>
-                <div className="activity-details">
-                  <span className="activity-title">
-                    In-Game: VS Code & React Architecture
-                  </span>
-                  <span className="activity-meta">34.5 hrs on record • Last played today</span>
-                </div>
+          {/* Secondary Showcase: Game Collector (if projects is primary) */}
+          {customData.showcaseType === "projects" && featuredGames.length > 0 && (
+            <div className="steam-showcase-box">
+              <div className="steam-showcase-header">
+                <span className="showcase-title">GAME COLLECTOR SHOWCASE</span>
+                <span className="showcase-count">{featuredGames.length} GAMES OWNED</span>
               </div>
 
-              <div className="activity-item">
-                <span className="activity-icon">📝</span>
-                <div className="activity-details">
-                  <span className="activity-title">
-                    Posted a new note on the Community Wall
-                  </span>
-                  <span className="activity-meta">
-                    "Rebuilding website with authentic Steam UI/UX"
-                  </span>
-                </div>
+              <div className="steam-game-collector-grid">
+                {featuredGames.slice(0, 10).map((game) => (
+                  <a
+                    key={game.id || game.steam_appid}
+                    href={game.store_url || `https://store.steampowered.com/app/${game.steam_appid}/`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="steam-collector-item"
+                    title={`${game.title} - ${game.playtime_hours} hrs played`}
+                  >
+                    <img
+                      src={game.cover_url || game.icon_url}
+                      alt={game.title}
+                      className="collector-cover"
+                      onError={(e) => {
+                        e.target.src =
+                          game.icon_url ||
+                          "https://cdn.akamai.steamstatic.com/steam/apps/440/header.jpg";
+                      }}
+                    />
+                    <div className="collector-overlay">
+                      <span className="collector-hours">{game.playtime_hours} hrs</span>
+                    </div>
+                  </a>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Showcase 4: Steam Comment Wall */}
+          {/* Steam Comment Wall */}
           <div className="steam-showcase-box">
             <div className="steam-showcase-header">
               <span className="showcase-title">PROFILE COMMENTS</span>
@@ -437,7 +410,7 @@ export default function Home() {
               <div className="comment-form-row">
                 <input
                   type="text"
-                  placeholder="Your Steam Name (Optional)"
+                  placeholder="Your Name (Optional)"
                   className="steam-input name"
                   value={authorName}
                   onChange={(e) => setAuthorName(e.target.value)}
@@ -500,7 +473,7 @@ export default function Home() {
                 ))
               ) : (
                 <div className="no-comments">
-                  No comments yet. Be the first to leave a message on the profile wall!
+                  No comments yet. Leave a note on the profile wall!
                 </div>
               )}
             </div>
@@ -509,7 +482,6 @@ export default function Home() {
 
         {/* Right Sidebar Column */}
         <aside className="steam-sidebar-col">
-          {/* Status Box */}
           <div className="steam-side-card">
             <div className="status-indicator-box online">
               <span className="status-bullet" />
@@ -520,11 +492,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Steam Badges Box */}
           <div className="steam-side-card">
             <div className="side-card-header">
               <span>BADGES</span>
-              <span className="card-count">8</span>
+              <span className="card-count">6</span>
             </div>
             <div className="badges-grid">
               <div className="badge-square" title="5 Years of Service">
@@ -539,7 +510,7 @@ export default function Home() {
               <div className="badge-square" title="Gemini AI Master">
                 💎
               </div>
-              <div className="badge-square" title="WebSocket Architect">
+              <div className="badge-square" title="Docker Architect">
                 ⚡
               </div>
               <div className="badge-square" title="Steam UI Specialist">
@@ -548,7 +519,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Profile Stats Summary */}
           <div className="steam-side-card">
             <div className="side-card-header">
               <span>STATS</span>
@@ -556,28 +526,23 @@ export default function Home() {
             <ul className="steam-stats-list">
               <li>
                 <span>Level</span>
-                <strong className="stat-val">42</strong>
+                <strong className="stat-val">{customData.level}</strong>
               </li>
               <li>
-                <span>Featured Projects</span>
+                <span>Projects</span>
                 <strong className="stat-val">12</strong>
               </li>
               <li>
                 <span>Games in Library</span>
-                <strong className="stat-val">18</strong>
+                <strong className="stat-val">{featuredGames.length}</strong>
               </li>
               <li>
                 <span>Profile Comments</span>
                 <strong className="stat-val">{comments.length}</strong>
               </li>
-              <li>
-                <span>Code Commits</span>
-                <strong className="stat-val">1,420+</strong>
-              </li>
             </ul>
           </div>
 
-          {/* Social Links Box */}
           <div className="steam-side-card">
             <div className="side-card-header">
               <span>LINKS & CONTACT</span>
@@ -617,11 +582,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Steam Friends Showcase */}
           <div className="steam-side-card">
             <div className="side-card-header">
               <span>FRIENDS</span>
-              <span className="card-count">12 ONLINE</span>
+              <span className="card-count">6 ONLINE</span>
             </div>
             <div className="friends-avatars-grid">
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -651,7 +615,7 @@ export default function Home() {
               </button>
             </div>
             <p className="modal-sub">
-              Select an award to give Abbos for his Steam UI profile!
+              Select an award to give Abbos for his profile!
             </p>
 
             <div className="awards-grid-selection">
@@ -695,12 +659,12 @@ export default function Home() {
         </div>
       )}
 
-      {/* Edit Profile Modal */}
+      {/* Customize Steam Profile Modal */}
       {showEditModal && (
         <div className="steam-modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="steam-modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="steam-modal-card custom-edit-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Edit Steam Profile</h2>
+              <h2>⚙️ Customize Steam Profile</h2>
               <button
                 className="close-modal-btn"
                 onClick={() => setShowEditModal(false)}
@@ -708,44 +672,154 @@ export default function Home() {
                 ×
               </button>
             </div>
-            <p className="modal-sub">Customizing persona and background artwork.</p>
-            <div className="modal-body-fields">
-              <label>Persona Name</label>
-              <input
-                type="text"
-                className="steam-input"
-                defaultValue="Abbos Jabborov"
-              />
 
-              <label>Custom Title</label>
-              <input
-                type="text"
-                className="steam-input"
-                defaultValue="Full-Stack Developer"
-              />
+            <form onSubmit={handleSaveCustomization} className="modal-form-scroll">
+              <div className="modal-body-fields">
+                <div className="form-group-row">
+                  <div className="form-col">
+                    <label>Persona Name</label>
+                    <input
+                      type="text"
+                      className="steam-input"
+                      value={editForm.personaName}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, personaName: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="form-col">
+                    <label>Real Name / Alias</label>
+                    <input
+                      type="text"
+                      className="steam-input"
+                      value={editForm.realName}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, realName: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
 
-              <label>Location</label>
-              <input
-                type="text"
-                className="steam-input"
-                defaultValue="Tashkent, Uzbekistan"
-              />
-            </div>
-            <div className="modal-footer-actions">
-              <button
-                className="steam-btn primary"
-                onClick={() => {
-                  setShowEditModal(false);
-                  triggerToast("Profile settings saved successfully!");
-                }}
-              >
-                Save Changes
-              </button>
-            </div>
+                <div className="form-group-row">
+                  <div className="form-col">
+                    <label>Location</label>
+                    <input
+                      type="text"
+                      className="steam-input"
+                      value={editForm.location}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, location: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-col">
+                    <label>Steam Level</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="999"
+                      className="steam-input"
+                      value={editForm.level}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, level: parseInt(e.target.value) || 1 })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="form-col">
+                  <label>Bio Summary</label>
+                  <textarea
+                    className="steam-textarea"
+                    rows={3}
+                    value={editForm.bio}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, bio: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="form-group-row">
+                  <div className="form-col">
+                    <label>Profile Background Theme</label>
+                    <select
+                      className="steam-select"
+                      value={editForm.themeBg}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, themeBg: e.target.value })
+                      }
+                    >
+                      <option value="default">Default Steam Dark (#1b2838)</option>
+                      <option value="midnight">Midnight Slate</option>
+                      <option value="cyberpunk">Cyberpunk Purple</option>
+                      <option value="space">Cosmic Deep Space</option>
+                      <option value="sunset">Amber Sunset</option>
+                    </select>
+                  </div>
+
+                  <div className="form-col">
+                    <label>Main Featured Showcase</label>
+                    <select
+                      className="steam-select"
+                      value={editForm.showcaseType}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, showcaseType: e.target.value })
+                      }
+                    >
+                      <option value="projects">Featured Projects Showcase</option>
+                      <option value="games">Game Collector Showcase</option>
+                      <option value="custom">Custom Text Showcase</option>
+                    </select>
+                  </div>
+                </div>
+
+                {editForm.showcaseType === "custom" && (
+                  <div className="custom-showcase-fields">
+                    <label>Custom Showcase Title</label>
+                    <input
+                      type="text"
+                      className="steam-input"
+                      value={editForm.customShowcaseTitle}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          customShowcaseTitle: e.target.value,
+                        })
+                      }
+                    />
+                    <label>Custom Showcase Text</label>
+                    <textarea
+                      className="steam-textarea"
+                      rows={3}
+                      value={editForm.customShowcaseBody}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          customShowcaseBody: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-footer-actions">
+                <button
+                  type="button"
+                  className="steam-btn secondary"
+                  onClick={() => setEditForm(DEFAULT_CUSTOMIZATION)}
+                >
+                  Reset Defaults
+                </button>
+                <button type="submit" className="steam-btn primary">
+                  Save Customization
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
     </div>
   );
 }
-

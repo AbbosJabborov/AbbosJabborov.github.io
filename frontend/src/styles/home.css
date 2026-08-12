@@ -70,19 +70,18 @@
   gap: 10px;
 }
 
-.steam-avatar-frame-glow {
+.steam-avatar-frame-solid {
   width: 164px;
   height: 164px;
-  padding: 4px;
-  background: linear-gradient(135deg, #57cbde, #1a9fff, #57cbde);
+  padding: 3px;
+  background: #101822;
   border-radius: 6px;
-  box-shadow: 0 0 20px rgba(87, 203, 222, 0.5);
-  transition: transform 0.3s ease;
+  border: 2px solid #57cbde;
+  transition: border-color 0.2s ease;
 }
 
-.steam-avatar-frame-glow:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 30px rgba(87, 203, 222, 0.8);
+.steam-avatar-frame-solid:hover {
+  border-color: #66c0f4;
 }
 
 .steam-avatar-large {
@@ -103,10 +102,11 @@
 }
 
 .steam-status-badge.online {
-  background: #57cbde;
-  color: #101822;
-  box-shadow: 0 0 10px rgba(87, 203, 222, 0.6);
+  background: rgba(87, 203, 222, 0.2);
+  color: #57cbde;
+  border: 1px solid rgba(87, 203, 222, 0.5);
 }
+
 
 /* User Headline */
 .steam-user-headline {
@@ -1038,10 +1038,94 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-@media (max-width: 600px) {
-  .steam-game-collector-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Steam Customization Modal */
+.steam-modal-card.custom-edit-modal {
+  width: 600px;
+  max-width: 95%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
 }
+
+.modal-form-scroll {
+  overflow-y: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.steam-select {
+  background: #101822;
+  border: 1px solid #2a3f5a;
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  cursor: pointer;
+}
+
+.steam-select:focus {
+  border-color: #66c0f4;
+}
+
+.custom-showcase-fields {
+  background: #101822;
+  border: 1px solid #2a3f5a;
+  padding: 14px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.custom-showcase-body {
+  padding: 20px;
+  color: #c6d4df;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Steam Profile Wallpaper & Theme Colors */
+.steam-profile-page.theme-default {
+  background: transparent;
+}
+
+.steam-profile-page.theme-midnight {
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+  border-radius: 8px;
+}
+
+.steam-profile-page.theme-cyberpunk {
+  background: radial-gradient(circle at top, #2e1065 0%, #13091e 100%);
+  border-radius: 8px;
+}
+
+.steam-profile-page.theme-space {
+  background: radial-gradient(circle at top, #172554 0%, #0b132b 100%);
+  border-radius: 8px;
+}
+
+.steam-profile-page.theme-sunset {
+  background: radial-gradient(circle at top, #451a03 0%, #1c1917 100%);
+  border-radius: 8px;
+}
+
 
 
