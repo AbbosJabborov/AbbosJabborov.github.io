@@ -1,37 +1,25 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
-import ProjectsPage from "./pages/ProjectsPage";
-import ProjectDetail from "./pages/ProjectDetail";
-import NotesPage from "./pages/NotesPage";
-import PostsPage from "./pages/PostsPage";
-import GamesPage from "./pages/GamesPage";
-import Navbar from "./components/Navbar";
-import "./styles/navbar.css";
-import "./styles/home.css";
-import "./styles/projects.css";
-import "./styles/shelves.css";
-
-function AppContent() {
-  return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/games" element={<GamesPage />} />
-        <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="/project/:slug" element={<ProjectDetail />} />
-        <Route path="/notes" element={<NotesPage />} />
-        <Route path="/posts" element={<PostsPage />} />
-      </Routes>
-    </>
-  );
-}
+import ArticlePage from "./pages/ArticlePage";
+import "./styles/index.css";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/story/:slug" element={<ArticlePage />} />
+        <Route path="/post/:slug" element={<ArticlePage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
+
+

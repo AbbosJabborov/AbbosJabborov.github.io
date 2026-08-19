@@ -1,31 +1,4 @@
-/* Motiva Sans (Official Steam Typography) */
-@font-face {
-  font-family: 'Motiva Sans';
-  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Regular.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Motiva Sans';
-  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Medium.woff') format('woff');
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Motiva Sans';
-  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-Bold.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Motiva Sans';
-  src: url('https://store.cloudflare.steamstatic.com/public/shared/fonts/MotivaSans-ExtraBold.woff') format('woff');
-  font-weight: 800;
-  font-style: normal;
-}
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 * {
   margin: 0;
@@ -34,32 +7,31 @@
 }
 
 :root {
-  --steam-bg-dark: #101822;
-  --steam-bg-main: #1b2838;
-  --steam-bg-card: #171a21;
-  --steam-bg-card-alt: rgba(23, 26, 33, 0.85);
-  --steam-border: #2a3f5a;
-  --steam-border-glow: #66c0f4;
-  --steam-cyan: #66c0f4;
-  --steam-blue-active: #1a9fff;
-  --steam-green: #90ba3c;
-  --steam-green-btn: linear-gradient(90deg, #a4d007 0%, #537009 100%);
-  --steam-text-muted: #8f98a0;
-  --steam-text-light: #c6d4df;
-  --steam-text-white: #ffffff;
-  --steam-online-blue: #57cbde;
+  --bg-space: #060913;
+  --cyan-glow: #00f0ff;
+  --pink-glow: #ec4899;
+  --purple-glow: #a855f7;
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--steam-bg-main);
-  background-image: radial-gradient(circle at 50% 0%, #1b2838 0%, #101822 100%);
-  background-attachment: fixed;
-  color: var(--steam-text-light);
-  font-family: 'Motiva Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-space);
+  color: #e2e8f0;
+  font-family: var(--font-main);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100%;
+  position: relative;
 }
 
 a {
@@ -68,45 +40,60 @@ a {
 }
 
 button {
-  font-family: 'Motiva Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  cursor: pointer;
+  font-family: var(--font-main);
+  outline: none;
 }
 
-/* Custom Steam Scrollbar */
+/* Custom Cyberpunk Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #101822;
+  background: #080c16;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a3f5a;
+  background: #1e293b;
   border-radius: 4px;
-  border: 2px solid #101822;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #66c0f4;
+  background: #00f0ff;
 }
 
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  font-size: 1.5rem;
-  color: var(--steam-text-muted);
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.error {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  font-size: 1.2rem;
-  color: #ff6b6b;
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
 }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.node-hologram-tooltip {
+  animation: float 3s ease-in-out infinite;
+}
+
 

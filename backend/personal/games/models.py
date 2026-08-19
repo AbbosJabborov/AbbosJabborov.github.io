@@ -99,10 +99,82 @@ class Review(models.Model):
     game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
 
 
+class Story(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(blank=True, unique=True, max_length=200)
+    subtitle = models.CharField(max_length=300, blank=True, null=True)
+    author = models.CharField(max_length=100, default="Abbos Jabborov")
+    cover = models.ImageField(upload_to="images/stories/%Y/%m/%d/", null=True, blank=True)
+    cover_url = models.URLField(max_length=500, blank=True, null=True)
+    content = models.TextField(help_text="Notion / Telegra.ph style markdown or rich content with image/gif URLs")
+    tags = models.CharField(max_length=200, blank=True, default="Article")
+    reading_time = models.CharField(max_length=50, blank=True, default="3 min read")
+    is_published = models.BooleanField(default=True)
+    published_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-published_at"]
+        verbose_name_plural = "Stories"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Story.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class SphereNode(models.Model):
+    CATEGORY_CHOICES = [
+        ("PROJECT", "Project"),
+        ("STORY", "Story / Article"),
+        ("GAME", "Game"),
+        ("SOCIAL", "Social / Contact"),
+        ("EXPERIMENT", "Experiment / Demo"),
+        ("OTHER", "Other"),
+    ]
+    NODE_TYPE_CHOICES = [
+        ("EXTERNAL", "External Link"),
+        ("STORY", "Internal Story / Notion Reader"),
+    ]
+
+    label = models.CharField(max_length=100, help_text="Node title displayed in 3D sphere")
+    subtitle = models.CharField(max_length=200, blank=True, null=True, help_text="Short description or tagline")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="PROJECT")
+    node_type = models.CharField(max_length=20, choices=NODE_TYPE_CHOICES, default="EXTERNAL")
+    url = models.URLField(max_length=500, blank=True, null=True, help_text="Target URL for external links (e.g. scrolls.claive.uz)")
+    story = models.ForeignKey(Story, on_delete=models.SET_NULL, null=True, blank=True, help_text="Linked story if node_type is STORY")
+    custom_slug = models.SlugField(blank=True, null=True, help_text="Slug for routing if node_type is STORY")
+    color = models.CharField(max_length=20, default="#00f0ff", help_text="Hex color or theme for node glow")
+    icon = models.CharField(max_length=50, default="globe", help_text="Icon identifier (e.g. globe, book, gamepad, code, user)")
+    is_featured = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["order", "-created_at"]
+
+    def __str__(self):
+        return f"{self.label} ({self.get_category_display()})"
+
+
 class Post(models.Model):
     title = models.CharField(max_length=100)
     body = models.CharField(max_length=10000)
     post_date = models.DateField(auto_now=True)
+
+    def __str__(self):
+        return self.title
 
 
 class Note(models.Model):
@@ -112,8 +184,6 @@ class Note(models.Model):
     position_y = models.FloatField()
     color = models.CharField(max_length=7, default="#c9cfcf")
     created_at = models.DateTimeField(default=timezone.now)
-
-    # Admin response
     admin_reply = models.TextField(max_length=500, blank=True, null=True)
     replied_at = models.DateTimeField(blank=True, null=True)
 
@@ -122,3 +192,5 @@ class Note(models.Model):
 
     def __str__(self):
         return f"Note by {self.sender or 'Anonymous'} at {self.created_at}"
+
+

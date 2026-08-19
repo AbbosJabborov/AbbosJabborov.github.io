@@ -1,6 +1,51 @@
 from rest_framework import serializers
 
-from games.models import Game, Note, Post, Project, Review
+from games.models import Game, Note, Post, Project, Review, SphereNode, Story
+
+
+class StorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Story
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "subtitle",
+            "author",
+            "cover",
+            "cover_url",
+            "content",
+            "tags",
+            "reading_time",
+            "is_published",
+            "published_at",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class SphereNodeSerializer(serializers.ModelSerializer):
+    story_detail = StorySerializer(source="story", read_only=True)
+
+    class Meta:
+        model = SphereNode
+        fields = [
+            "id",
+            "label",
+            "subtitle",
+            "category",
+            "node_type",
+            "url",
+            "story",
+            "story_detail",
+            "custom_slug",
+            "color",
+            "icon",
+            "is_featured",
+            "order",
+            "is_active",
+            "created_at",
+        ]
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -12,14 +57,12 @@ class GameSerializer(serializers.ModelSerializer):
             "slug",
             "platform",
             "steam_appid",
-
             "cover",
             "cover_url",
             "hero_url",
             "icon_url",
             "store_url",
             "is_favorite",
-
             "category",
             "playtime_hours",
             "last_played",
@@ -29,6 +72,7 @@ class GameSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
 
 
 

@@ -1,13 +1,45 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from games.models import Game, Note, Post, Project, Review
+from games.models import Game, Note, Post, Project, Review, SphereNode, Story
 
 # Register your models here.
 admin.site.register(Game)
 admin.site.register(Project)
 admin.site.register(Review)
 admin.site.register(Post)
+
+
+@admin.register(Story)
+class StoryAdmin(admin.ModelAdmin):
+    list_display = ["title", "slug", "reading_time", "is_published", "published_at", "created_at"]
+    list_filter = ["is_published", "published_at"]
+    search_fields = ["title", "subtitle", "content", "tags"]
+    prepopulated_fields = {"slug": ("title",)}
+    fieldsets = (
+        ("Story Header", {"fields": ("title", "slug", "subtitle", "author", "tags", "reading_time")}),
+        ("Media & Visuals", {"fields": ("cover", "cover_url")}),
+        ("Content (Markdown / Notion / Telegra.ph style)", {"fields": ("content",)}),
+        ("Publishing", {"fields": ("is_published", "published_at")}),
+    )
+
+
+@admin.register(SphereNode)
+class SphereNodeAdmin(admin.ModelAdmin):
+    list_display = ["label", "category", "node_type", "color_badge", "url", "story", "order", "is_active"]
+    list_filter = ["category", "node_type", "is_active", "is_featured"]
+    search_fields = ["label", "subtitle", "url", "custom_slug"]
+    list_editable = ["order", "is_active"]
+
+    def color_badge(self, obj):
+        return format_html(
+            '<span style="display:inline-block; width:14px; height:14px; border-radius:50%; background-color:{}; margin-right:6px; vertical-align:middle;"></span>{}',
+            obj.color,
+            obj.color,
+        )
+
+    color_badge.short_description = "Color"
+
 
 
 @admin.register(Note)
