@@ -6,67 +6,156 @@ import { GRAPH_DATA } from "../config/nodesData";
 export default function NeuralSphere({ onHoverNode = () => {} }) {
   const mountRef = useRef(null);
   const labelsContainerRef = useRef(null);
+  const warpOverlayRef = useRef(null);
   const navigate = useNavigate();
 
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
+  const interactiveNodesRef = useRef([]);
   const hoveredNodeRef = useRef(null);
   const activeHoverIdRef = useRef(null);
-  const draggedNodeRef = useRef(null);
+  const isFlyingRef = useRef(false);
 
-  // Sound FX synthesizer ref
+  // Audio state & synthesis refs
   const audioCtxRef = useRef(null);
+  const ambientHumRef = useRef(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Orbit, Pan & Zoom camera physics
-  const controlsRef = useRef({
-    lon: 20,
-    lat: 18,
-    targetLon: 20,
-    targetLat: 18,
-    distance: 380,
-    targetDistance: 380,
-    panX: 0,
-    panY: 0,
-    targetPanX: 0,
-    targetPanY: 0,
-    isDraggingCamera: false,
-    isPanning: false,
-    isDraggingNode: false,
+  // Interaction tracking for idle breathing ramp
+  const lastInteractionTimeRef = useRef(Date.now());
+  const mouseRay3DRef = useRef(new THREE.Vector3(0, 0, 1));
+  const isMouseInsideRef = useRef(false);
+
+  // 360° Interior Look Physics & Zoom Lerping
+  const rotationRef = useRef({
+    lon: 0,
+    lat: 5,
+    targetLon: 0,
+    targetLat: 5,
+    fov: 65,
+    targetFov: 65,
+    isDragging: false,
     startX: 0,
     startY: 0,
     startLon: 0,
     startLat: 0,
-    startPanX: 0,
-    startPanY: 0,
+    startPinchDist: 0,
+    startFov: 65,
   });
 
-  // Soft Web Audio chime
-  const playSound = useCallback((freq = 440, type = "sine", duration = 0.08) => {
-    if (!soundEnabled) return;
+
+  // Sound FX synthesizer with spatial panning and harmonic frequencies
+  const initAudio = useCallback(() => {
+    if (audioCtxRef.current) return;
     try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
+
+      // Subtle atmospheric ambient drone
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(55, ctx.currentTime); // A1 note
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(110, ctx.currentTime); // A2 note
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(220, ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.012, ctx.currentTime);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start();
+      osc2.start();
+
+      ambientHumRef.current = { osc1, osc2, gain, filter };
+    } catch {
+      // Audio context blocked or not supported
+    }
+  }, []);
+
+  const playSpatialSound = useCallback(
+    (freq = 440, type = "sine", duration = 0.08, panX = 0, volume = 0.04) => {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const ctx = audioCtxRef.current;
+        if (!ctx) return;
+        if (ctx.state === "suspended") ctx.resume();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        gain.gain.setValueAtTime(volume, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+        // Spatial Stereo Panner if supported
+        if (ctx.createStereoPanner) {
+          const panner = ctx.createStereoPanner();
+          panner.pan.setValueAtTime(Math.max(-1, Math.min(1, panX)), ctx.currentTime);
+          osc.connect(gain);
+          gain.connect(panner);
+          panner.connect(ctx.destination);
+        } else {
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+        }
+
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch {
+        // Ignored
       }
+    },
+    [soundEnabled, initAudio]
+  );
+
+  const playWarpSound = useCallback(() => {
+    if (!soundEnabled) return;
+    initAudio();
+    try {
       const ctx = audioCtxRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
+      if (!ctx) return;
+      if (ctx.state === "suspended") ctx.resume();
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.6);
+
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.65);
+
       osc.connect(gain);
       gain.connect(ctx.destination);
+
       osc.start();
-      osc.stop(ctx.currentTime + duration);
+      osc.stop(ctx.currentTime + 0.65);
     } catch {
-      // Audio not supported or blocked
+      // Ignored
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, initAudio]);
+
+  const sphericalToCartesian = useCallback((r, phi, theta) => {
+    return new THREE.Vector3(
+      r * Math.sin(phi) * Math.cos(theta),
+      r * Math.cos(phi),
+      r * Math.sin(phi) * Math.sin(theta)
+    );
+  }, []);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -76,12 +165,12 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // 1. Three.js Scene Setup
+    // 1. Three.js Scene Setup (Interior Camera Perspective)
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(52, width / height, 1, 4000);
-    camera.position.set(0, 60, 380);
+    const camera = new THREE.PerspectiveCamera(65, width / height, 1, 3000);
+    camera.position.set(0, 0, 0.01);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({
@@ -95,32 +184,83 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
 
-    const graphGroup = new THREE.Group();
-    scene.add(graphGroup);
+    const sphereGroup = new THREE.Group();
+    scene.add(sphereGroup);
 
-    // 2. High-Tech Circular Glowing Point Texture
-    const createCircleTexture = () => {
+    // 2. High-Tech Radiant Particle Texture (for shining pulses and stars)
+    const createShiningParticleTexture = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 128;
-      canvas.height = 128;
+      canvas.width = 64;
+      canvas.height = 64;
       const ctx = canvas.getContext("2d");
-      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 60);
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
       grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-      grad.addColorStop(0.3, "rgba(255, 255, 255, 0.95)");
-      grad.addColorStop(0.65, "rgba(255, 255, 255, 0.35)");
-      grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+      grad.addColorStop(0.2, "rgba(255, 255, 255, 0.95)");
+      grad.addColorStop(0.5, "rgba(220, 240, 255, 0.5)");
+      grad.addColorStop(0.8, "rgba(100, 200, 255, 0.15)");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 128, 128);
+      ctx.fillRect(0, 0, 64, 64);
 
       const texture = new THREE.CanvasTexture(canvas);
       texture.needsUpdate = true;
       return texture;
     };
-    const circleTexture = createCircleTexture();
+    const shiningTexture = createShiningParticleTexture();
 
-    // 3. Build Obsidian Graph Nodes (Expanded 3D Star Galaxy Layout)
+    // 3. Deep 3D Celestial Starfield (Tiny twinkling stars in the background)
+    const starCount = 750;
+    const starPositions = new Float32Array(starCount * 3);
+    const starColors = new Float32Array(starCount * 3);
+    const starTwinkleOffsets = new Float32Array(starCount);
+
+    const starColorChoices = [
+      new THREE.Color(0xf8fafc), // Silver white
+      new THREE.Color(0x93c5fd), // Pale sky blue
+      new THREE.Color(0xc4b5fd), // Soft violet
+      new THREE.Color(0x6ee7b7), // Soft mint
+    ];
+
+    for (let i = 0; i < starCount; i++) {
+      const i3 = i * 3;
+      const starDist = 900 + Math.random() * 800; // Far background shell
+      const phi = Math.acos(1 - 2 * Math.random());
+      const theta = Math.random() * Math.PI * 2;
+
+      const starPos = sphericalToCartesian(starDist, phi, theta);
+      starPositions[i3] = starPos.x;
+      starPositions[i3 + 1] = starPos.y;
+      starPositions[i3 + 2] = starPos.z;
+
+      const chosenColor = starColorChoices[Math.floor(Math.random() * starColorChoices.length)];
+      starColors[i3] = chosenColor.r;
+      starColors[i3 + 1] = chosenColor.g;
+      starColors[i3 + 2] = chosenColor.b;
+
+      starTwinkleOffsets[i] = Math.random() * Math.PI * 2;
+    }
+
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+    starGeo.setAttribute("color", new THREE.BufferAttribute(starColors, 3));
+
+    const starMat = new THREE.PointsMaterial({
+      vertexColors: true,
+      size: 2.2,
+      map: shiningTexture,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const starField = new THREE.Points(starGeo, starMat);
+    sphereGroup.add(starField);
+
+    // 4. Build Spherical Knowledge Graph with Loading Assembly Spawn Points
     const rawNodes = GRAPH_DATA.nodes;
     const rawLinks = GRAPH_DATA.links;
+    const sphereRadius = 280;
+
 
     const nodeMap = new Map();
     const adjacency = new Map();
@@ -136,64 +276,70 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
       }
     });
 
-    // Expanded 3D Galaxy Cluster Anchors (Wide, spacious layout)
-    const clusterPositions = {
-      "core-claive": new THREE.Vector3(0, 0, 0),
-      "hub-projects": new THREE.Vector3(-190, 85, 55),
-      "hub-writing": new THREE.Vector3(180, 110, -40),
-      "hub-games": new THREE.Vector3(165, -100, 95),
-      "hub-experiments": new THREE.Vector3(-175, -95, -80),
-      "hub-socials": new THREE.Vector3(0, 175, 120),
+    // Spherical Coordinates for Major Hubs
+    const clusterSphericalAngles = {
+      "core-claive": { phi: Math.PI * 0.5, theta: 0 },
+      "hub-projects": { phi: Math.PI * 0.38, theta: Math.PI * 0.45 },
+      "hub-writing": { phi: Math.PI * 0.35, theta: Math.PI * 1.15 },
+      "hub-games": { phi: Math.PI * 0.65, theta: Math.PI * 0.8 },
+      "hub-experiments": { phi: Math.PI * 0.68, theta: Math.PI * 1.6 },
+      "hub-socials": { phi: Math.PI * 0.32, theta: Math.PI * 1.85 },
     };
 
     const nodeObjects = [];
     const interactiveHitList = [];
 
-    const hitGeo = new THREE.SphereGeometry(22, 8, 8);
+    const hitGeo = new THREE.SphereGeometry(20, 8, 8);
     const hitMat = new THREE.MeshBasicMaterial({ visible: false });
 
-    // Clear and build HTML Label overlays
     labelsContainer.innerHTML = "";
 
     rawNodes.forEach((node, index) => {
-      let initPos;
-      if (clusterPositions[node.id]) {
-        initPos = clusterPositions[node.id].clone();
+      let phi, theta;
+
+      if (clusterSphericalAngles[node.id]) {
+        phi = clusterSphericalAngles[node.id].phi;
+        theta = clusterSphericalAngles[node.id].theta;
       } else {
-        let parentPos = new THREE.Vector3(0, 0, 0);
-        for (const [clusterId, pos] of Object.entries(clusterPositions)) {
+        let parentAngles = { phi: Math.PI * 0.5, theta: Math.PI * 0.5 };
+        for (const [clusterId, angles] of Object.entries(clusterSphericalAngles)) {
           if (adjacency.get(node.id)?.has(clusterId)) {
-            parentPos = pos;
+            parentAngles = angles;
             break;
           }
         }
-        const angle = (index / rawNodes.length) * Math.PI * 2;
-        const spread = 70 + (index % 5) * 18;
-        const elev = Math.sin(index * 1.8) * 55;
-        initPos = new THREE.Vector3(
-          parentPos.x + Math.cos(angle) * spread + (Math.random() - 0.5) * 25,
-          parentPos.y + elev + (Math.random() - 0.5) * 25,
-          parentPos.z + Math.sin(angle) * spread + (Math.random() - 0.5) * 25
-        );
+        const angleOffset = (index % 4) * (Math.PI * 0.5);
+        const radiusOffset = 0.14 + (index % 3) * 0.05;
+        phi = Math.max(0.15, Math.min(Math.PI - 0.15, parentAngles.phi + Math.sin(angleOffset) * radiusOffset));
+        theta = parentAngles.theta + Math.cos(angleOffset) * radiusOffset * 1.5;
       }
+
+      const targetPos = sphericalToCartesian(sphereRadius, phi, theta);
+      // Chaotic scattered dust origin position for the Loading Intro sequence
+      const dustDistance = 700 + Math.random() * 500;
+      const dustPos = sphericalToCartesian(
+        dustDistance,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI * 2
+      );
 
       const nodeColor = new THREE.Color(node.color || "#38bdf8");
 
-      // Node 3D Mesh Group
+      // Node 3D Mesh
       const group = new THREE.Group();
-      group.position.copy(initPos);
+      group.position.copy(dustPos);
 
-      const coreRadius = node.isHub ? (node.id === "core-claive" ? 11 : 8.5) : node.size ? node.size * 0.9 : 5.5;
+      const coreRadius = node.isHub ? (node.id === "core-claive" ? 9 : 7) : node.size ? node.size * 0.75 : 4.5;
       const coreGeo = new THREE.SphereGeometry(coreRadius, 16, 16);
       const coreMat = new THREE.MeshBasicMaterial({
         color: nodeColor,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.0, // Fades in on intro assembly
       });
       const coreMesh = new THREE.Mesh(coreGeo, coreMat);
       group.add(coreMesh);
 
-      // Outer Halo for Hubs
+      // Outer Halo Ring for Hubs
       let haloMesh = null;
       if (node.isHub) {
         const haloGeo = new THREE.RingGeometry(coreRadius * 1.35, coreRadius * 1.85, 32);
@@ -201,10 +347,11 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
           color: nodeColor,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.5,
+          opacity: 0.0,
           blending: THREE.AdditiveBlending,
         });
         haloMesh = new THREE.Mesh(haloGeo, haloMat);
+        haloMesh.lookAt(0, 0, 0);
         group.add(haloMesh);
       }
 
@@ -220,9 +367,9 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
       group.add(hitMesh);
       interactiveHitList.push(hitMesh);
 
-      graphGroup.add(group);
+      sphereGroup.add(group);
 
-      // Create Persistent Floating Label Element (Obsidian Style)
+      // Floating Typography Label
       const labelEl = document.createElement("div");
       labelEl.className = "obsidian-node-label";
       labelEl.textContent = node.label;
@@ -237,9 +384,9 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
         font-size: ${node.isHub ? (node.id === "core-claive" ? "14px" : "12px") : "11px"};
         font-weight: ${node.isHub ? "700" : "500"};
         color: #f1f5f9;
-        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9), 0 0 10px ${node.color || "#38bdf8"}44;
-        opacity: ${node.isHub ? "0.85" : "0.4"};
-        transition: opacity 0.2s ease, transform 0.15s ease, color 0.2s ease;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95), 0 0 10px ${node.color || "#38bdf8"}44;
+        opacity: 0;
+        transition: opacity 0.25s ease, transform 0.15s ease, color 0.2s ease;
         white-space: nowrap;
         user-select: none;
         letter-spacing: 0.02em;
@@ -250,12 +397,11 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
       const nodeItem = {
         id: node.id,
         data: node,
-        pos: initPos.clone(),
-        velocity: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.05,
-          (Math.random() - 0.5) * 0.05,
-          (Math.random() - 0.5) * 0.05
-        ),
+        pos: dustPos.clone(),
+        targetPos: targetPos.clone(),
+        basePos: targetPos.clone(),
+        phi,
+        theta,
         group,
         coreMesh,
         haloMesh,
@@ -271,7 +417,7 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
 
     interactiveNodesRef.current = interactiveHitList;
 
-    // 4. Build Obsidian Edge Links BufferGeometry & Dynamic Synaptic Action Potential Pulses
+    // 3. Build Obsidian Edge Links BufferGeometry
     const edgePairs = [];
     rawLinks.forEach((link) => {
       const sourceNode = nodeMap.get(link.source);
@@ -282,7 +428,6 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
           target: targetNode,
           sourceId: link.source,
           targetId: link.target,
-          restLength: sourceNode.isHub || targetNode.isHub ? 100 : 75,
         });
       }
     });
@@ -306,46 +451,50 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
     const edgeMat = new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.0, // Fades in on assembly
       blending: THREE.AdditiveBlending,
       linewidth: 1.2,
     });
     const edgeLines = new THREE.LineSegments(edgeGeo, edgeMat);
-    graphGroup.add(edgeLines);
+    sphereGroup.add(edgeLines);
 
-    // 5. Flowing Synaptic Action Potentials (Energy pulses across Obsidian links)
-    const pulseCount = 28;
-    const pulses = [];
-    const pulseGeo = new THREE.SphereGeometry(2.4, 8, 8);
+    // 5. Volumetric Shining Action Potential Pulses along edges (Compact & Radiant)
+    const trailCount = 55;
+    const trails = [];
+    const trailGeo = new THREE.SphereGeometry(1.0, 8, 8); // Compact sleek size
 
-    for (let i = 0; i < pulseCount; i++) {
+    for (let i = 0; i < trailCount; i++) {
       const edge = edgePairs[Math.floor(Math.random() * edgePairs.length)];
       if (!edge) continue;
 
-      const pulseColor = edge.source.color.clone().lerp(edge.target.color, 0.5);
-      const pulseMat = new THREE.MeshBasicMaterial({
-        color: pulseColor,
+      const baseShineColor = edge.source.color.clone().lerp(edge.target.color, Math.random());
+      // Boost radiance for intense shine
+      baseShineColor.addScalar(0.35);
+
+      const trailMat = new THREE.MeshBasicMaterial({
+        color: baseShineColor,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.95,
         blending: THREE.AdditiveBlending,
       });
-      const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
-      pulseMesh.position.copy(edge.source.pos);
-      graphGroup.add(pulseMesh);
+      const trailMesh = new THREE.Mesh(trailGeo, trailMat);
+      trailMesh.position.copy(edge.source.pos);
+      sphereGroup.add(trailMesh);
 
-      pulses.push({
-        mesh: pulseMesh,
+      trails.push({
+        mesh: trailMesh,
         edge,
         progress: Math.random(),
-        speed: 0.005 + Math.random() * 0.007,
+        speed: 0.0035 + Math.random() * 0.0055,
+        wobbleOffset: Math.random() * 10,
+        baseScale: 0.8 + Math.random() * 0.5,
       });
     }
 
-    // 6. Raycasting, Dragging & 3D Orbit Controls
+    // 6. Raycasting & Magnetism Handlers
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
-    const dragPlane = new THREE.Plane();
-    const planeIntersect = new THREE.Vector3();
+
 
     const getClientCoords = (e) => {
       if (e.touches && e.touches.length > 0) {
@@ -355,11 +504,15 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
     };
 
     const updateRaycast = (clientX, clientY) => {
+      lastInteractionTimeRef.current = Date.now();
       const rect = container.getBoundingClientRect();
       mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
+      mouseRay3DRef.current.copy(raycaster.ray.direction).multiplyScalar(sphereRadius);
+      isMouseInsideRef.current = true;
+
       const intersects = raycaster.intersectObjects(interactiveNodesRef.current, false);
 
       if (intersects.length > 0) {
@@ -371,7 +524,11 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
           hoveredNodeRef.current = hit;
           activeHoverIdRef.current = data.id;
           container.style.cursor = "pointer";
-          playSound(data.isHub ? 620 : 520, "sine", 0.06);
+
+          // Parallax audio: frequency harmonic + stereo pan based on mouse X
+          const harmonicFreqs = [440, 554.37, 659.25, 880, 987.77];
+          const freq = harmonicFreqs[Math.abs(data.label.length) % harmonicFreqs.length];
+          playSpatialSound(data.isHub ? freq * 1.25 : freq, "sine", 0.09, mouse.x, 0.05);
         }
 
         const worldPos = new THREE.Vector3();
@@ -397,106 +554,129 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
       }
     };
 
-    // Pointer Down: Determine whether user grabbed a node or background space
     const onPointerDown = (e) => {
+      lastInteractionTimeRef.current = Date.now();
+      initAudio();
       const coords = getClientCoords(e);
-      const rect = container.getBoundingClientRect();
-      mouse.x = ((coords.x - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((coords.y - rect.top) / rect.height) * 2 + 1;
+      const rot = rotationRef.current;
+      rot.isDragging = true;
+      rot.startX = coords.x;
+      rot.startY = coords.y;
+      rot.startLon = rot.targetLon;
+      rot.startLat = rot.targetLat;
 
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(interactiveNodesRef.current, false);
-
-      const ctrl = controlsRef.current;
-      ctrl.startX = coords.x;
-      ctrl.startY = coords.y;
-
-      if (intersects.length > 0 && e.button === 0 && !e.shiftKey) {
-        // Physical Node Dragging!
-        const hit = intersects[0].object;
-        const nodeItem = nodeMap.get(hit.userData.nodeData.id);
-        draggedNodeRef.current = nodeItem;
-        ctrl.isDraggingNode = true;
-        ctrl.isDraggingCamera = false;
-
-        // Set drag plane facing camera at node depth
-        dragPlane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()).negate(), nodeItem.pos);
-        container.style.cursor = "grabbing";
-        playSound(480, "triangle", 0.08);
-      } else {
-        // Camera Orbit / Pan Dragging
-        ctrl.isDraggingCamera = true;
-        ctrl.isDraggingNode = false;
-        ctrl.isPanning = e.button === 2 || e.shiftKey;
-        ctrl.startLon = ctrl.targetLon;
-        ctrl.startLat = ctrl.targetLat;
-        ctrl.startPanX = ctrl.targetPanX;
-        ctrl.startPanY = ctrl.targetPanY;
-        container.style.cursor = ctrl.isPanning ? "move" : "grabbing";
+      if (e.touches && e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        rot.startPinchDist = Math.hypot(dx, dy);
+        rot.startFov = rot.targetFov;
       }
+
+      container.style.cursor = "grabbing";
     };
 
     const onPointerMove = (e) => {
       const coords = getClientCoords(e);
-      const ctrl = controlsRef.current;
-      const rect = container.getBoundingClientRect();
-      mouse.x = ((coords.x - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((coords.y - rect.top) / rect.height) * 2 + 1;
+      const rot = rotationRef.current;
 
-      if (ctrl.isDraggingNode && draggedNodeRef.current) {
-        // Update physical position of dragged node along plane
-        raycaster.setFromCamera(mouse, camera);
-        if (raycaster.ray.intersectPlane(dragPlane, planeIntersect)) {
-          draggedNodeRef.current.pos.copy(planeIntersect);
-          draggedNodeRef.current.velocity.set(0, 0, 0);
-        }
-      } else if (ctrl.isDraggingCamera) {
-        const deltaX = coords.x - ctrl.startX;
-        const deltaY = coords.y - ctrl.startY;
+      if (rot.isDragging) {
+        lastInteractionTimeRef.current = Date.now();
 
-        if (ctrl.isPanning) {
-          ctrl.targetPanX = ctrl.startPanX - deltaX * 0.45;
-          ctrl.targetPanY = ctrl.startPanY + deltaY * 0.45;
-        } else {
-          ctrl.targetLon = ctrl.startLon + deltaX * 0.4;
-          ctrl.targetLat = Math.max(-80, Math.min(80, ctrl.startLat - deltaY * 0.4));
+        // Handle Mobile 2-finger Pinch Zoom
+        if (e.touches && e.touches.length === 2 && rot.startPinchDist > 0) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const currentPinchDist = Math.hypot(dx, dy);
+          const pinchFactor = rot.startPinchDist / Math.max(1, currentPinchDist);
+          rot.targetFov = Math.max(35, Math.min(85, rot.startFov * pinchFactor));
+          return;
         }
+
+        // Smooth controlled rotation drag
+        const deltaX = (coords.x - rot.startX) * 0.085;
+        const deltaY = (coords.y - rot.startY) * 0.085;
+
+        rot.targetLon = rot.startLon - deltaX;
+        rot.targetLat = Math.max(-80, Math.min(80, rot.startLat + deltaY));
       } else {
         updateRaycast(coords.x, coords.y);
       }
     };
 
+    // Smooth Mouse Wheel Zoom (FOV adjustment)
+    const onWheel = (e) => {
+      e.preventDefault();
+      lastInteractionTimeRef.current = Date.now();
+      const rot = rotationRef.current;
+      rot.targetFov = Math.max(35, Math.min(85, rot.targetFov + e.deltaY * 0.04));
+    };
+
+    // Node Click → Camera Warp Flythrough Transition
+    const triggerWarpFlythrough = (targetNode) => {
+      if (isFlyingRef.current) return;
+      isFlyingRef.current = true;
+      playWarpSound();
+
+      // Show Warp Speed Overlay
+      if (warpOverlayRef.current) {
+        warpOverlayRef.current.style.opacity = "1";
+      }
+
+      const startPos = camera.position.clone();
+      const targetWorldPos = targetNode.pos.clone().multiplyScalar(0.92); // Fly right up to the node
+      const startFov = camera.fov;
+      const startTime = performance.now();
+      const flyDuration = 650; // ms
+
+      const flyStep = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / flyDuration);
+        const ease = Math.pow(progress, 3); // Accelerating warp curve
+
+        camera.position.lerpVectors(startPos, targetWorldPos, ease);
+        camera.fov = THREE.MathUtils.lerp(startFov, 115, ease); // Hyperspace FOV stretch
+        camera.updateProjectionMatrix();
+
+        if (progress < 1) {
+          requestAnimationFrame(flyStep);
+        } else {
+          // Warp arrival: navigate or open link
+          const nodeData = targetNode.data;
+          if (nodeData.node_type === "STORY" && nodeData.slug) {
+            navigate(`/story/${nodeData.slug}`);
+          } else if (nodeData.url) {
+            window.open(nodeData.url, "_blank", "noopener,noreferrer");
+            // Reset warp position smoothly after opening external link
+            setTimeout(() => {
+              camera.position.set(0, 0, 0.01);
+              camera.fov = rotationRef.current.fov;
+              camera.updateProjectionMatrix();
+              if (warpOverlayRef.current) warpOverlayRef.current.style.opacity = "0";
+              isFlyingRef.current = false;
+            }, 300);
+          }
+        }
+      };
+
+      requestAnimationFrame(flyStep);
+    };
+
     const onPointerUp = (e) => {
+      lastInteractionTimeRef.current = Date.now();
       const coords = getClientCoords(e);
-      const ctrl = controlsRef.current;
+      const rot = rotationRef.current;
+      const movedDistance = Math.hypot(coords.x - rot.startX, coords.y - rot.startY);
+      rot.isDragging = false;
+      rot.startPinchDist = 0;
 
-      const wasNodeDrag = ctrl.isDraggingNode;
-      const movedDistance = Math.hypot(coords.x - ctrl.startX, coords.y - ctrl.startY);
-
-      ctrl.isDraggingCamera = false;
-      ctrl.isDraggingNode = false;
-      ctrl.isPanning = false;
-
-      // If clicked without significant drag, trigger node navigation
-      if (wasNodeDrag && movedDistance < 5 && draggedNodeRef.current) {
-        const node = draggedNodeRef.current.data;
-        playSound(750, "sine", 0.12);
-
-        if (node.node_type === "STORY" && node.slug) {
-          navigate(`/story/${node.slug}`);
-        } else if (node.url) {
-          window.open(node.url, "_blank", "noopener,noreferrer");
+      if (movedDistance < 5 && hoveredNodeRef.current && !isFlyingRef.current) {
+        const nodeItem = nodeMap.get(hoveredNodeRef.current.userData.nodeData.id);
+        if (nodeItem) {
+          triggerWarpFlythrough(nodeItem);
         }
       }
 
-      draggedNodeRef.current = null;
       container.style.cursor = hoveredNodeRef.current ? "pointer" : "grab";
-    };
-
-    const onWheel = (e) => {
-      e.preventDefault();
-      const ctrl = controlsRef.current;
-      ctrl.targetDistance = Math.max(160, Math.min(750, ctrl.targetDistance + e.deltaY * 0.55));
     };
 
     const onContextMenu = (e) => e.preventDefault();
@@ -511,6 +691,7 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
     window.addEventListener("touchmove", onPointerMove, { passive: true });
     window.addEventListener("touchend", onPointerUp);
 
+
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
       const w = container.clientWidth;
@@ -521,99 +702,121 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
     };
     window.addEventListener("resize", handleResize);
 
-    // 7. Force-Directed 3D Physics Simulation Loop
+    // 6. Main Physics, Loading Intro & Intensified Idle Breathing Loop
     let animationFrameId;
-    const clock = new THREE.Clock();
+    const mountStartTime = performance.now();
+    const introDuration = 2200; // 2.2s assembly sequence
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
-      const ctrl = controlsRef.current;
+      const now = performance.now();
+      const elapsedTime = (now - mountStartTime) * 0.001;
+      const rot = rotationRef.current;
 
-      // Subtle ambient orbital drift when not actively interacting
-      if (!ctrl.isDraggingCamera && !ctrl.isDraggingNode) {
-        ctrl.targetLon += 0.035;
+
+      // Loading Intro Assembly Progress (0 -> 1 with elastic ease-out)
+      const introProgress = Math.min(1, (now - mountStartTime) / introDuration);
+      const introEase = 1 - Math.pow(1 - introProgress, 3);
+
+      // Idle Breathing Ramp Calculation:
+      // The longer without interaction, the more intense the organic breathing
+      const idleTimeSeconds = (Date.now() - lastInteractionTimeRef.current) / 1000;
+      // Idle factor scales smoothly from 1.0 (just interacted) up to 4.5 (idle for 12s+)
+      const idleIntensity = THREE.MathUtils.clamp(1.0 + Math.max(0, idleTimeSeconds - 2) * 0.35, 1.0, 4.5);
+
+      // Gentle ambient drift, slower and more cinematic
+      if (!rot.isDragging && !isFlyingRef.current) {
+        rot.targetLon += 0.012 * (1 + (idleIntensity - 1) * 0.2);
       }
 
-      // Smooth camera orbit & zoom lerp
-      ctrl.lon += (ctrl.targetLon - ctrl.lon) * 0.08;
-      ctrl.lat += (ctrl.targetLat - ctrl.lat) * 0.08;
-      ctrl.distance += (ctrl.targetDistance - ctrl.distance) * 0.1;
-      ctrl.panX += (ctrl.targetPanX - ctrl.panX) * 0.1;
-      ctrl.panY += (ctrl.targetPanY - ctrl.panY) * 0.1;
+      // Smooth camera look & FOV zoom interpolation (silky lerping)
+      if (!isFlyingRef.current) {
+        rot.lon += (rot.targetLon - rot.lon) * 0.045;
+        rot.lat += (rot.targetLat - rot.lat) * 0.045;
+        rot.fov += (rot.targetFov - rot.fov) * 0.055;
 
-      const phi = THREE.MathUtils.degToRad(90 - ctrl.lat);
-      const theta = THREE.MathUtils.degToRad(ctrl.lon);
+        camera.fov = rot.fov;
+        camera.updateProjectionMatrix();
 
-      camera.position.x = ctrl.distance * Math.sin(phi) * Math.sin(theta) + ctrl.panX;
-      camera.position.y = ctrl.distance * Math.cos(phi) + ctrl.panY;
-      camera.position.z = ctrl.distance * Math.sin(phi) * Math.cos(theta);
+        const phi = THREE.MathUtils.degToRad(90 - rot.lat);
+        const theta = THREE.MathUtils.degToRad(rot.lon);
 
-      camera.lookAt(ctrl.panX, ctrl.panY, 0);
+        const targetX = 500 * Math.sin(phi) * Math.cos(theta);
+        const targetY = 500 * Math.cos(phi);
+        const targetZ = 500 * Math.sin(phi) * Math.sin(theta);
 
-      // ----------------------------------------------------
-      // Force Physics: Spring Links, Repulsion & Centering
-      // ----------------------------------------------------
-      // A. Edge Spring Forces
-      edgePairs.forEach((edge) => {
-        const delta = edge.target.pos.clone().sub(edge.source.pos);
-        const dist = delta.length() || 1;
-        const displacement = dist - edge.restLength;
-        const springForce = delta.normalize().multiplyScalar(displacement * 0.0032);
+        camera.lookAt(targetX, targetY, targetZ);
+      }
 
-        if (edge.source !== draggedNodeRef.current) edge.source.velocity.add(springForce);
-        if (edge.target !== draggedNodeRef.current) edge.target.velocity.sub(springForce);
-      });
 
-      // B. Node-to-Node Coulomb Repulsion
-      for (let i = 0; i < nodeObjects.length; i++) {
-        for (let j = i + 1; j < nodeObjects.length; j++) {
-          const n1 = nodeObjects[i];
-          const n2 = nodeObjects[j];
-          const delta = n2.pos.clone().sub(n1.pos);
-          const dist = delta.length() || 1;
+      // Dynamic Node Positioning: Assembly Intro + Idle Breathing + Cursor Magnetism
+      const mouseRay3D = mouseRay3DRef.current;
+      const isMouseActive = isMouseInsideRef.current && !rot.isDragging;
 
-          if (dist < 220) {
-            const repelStrength = (220 - dist) * 0.0019;
-            const repel = delta.normalize().multiplyScalar(repelStrength);
-            if (n1 !== draggedNodeRef.current) n1.velocity.sub(repel);
-            if (n2 !== draggedNodeRef.current) n2.velocity.add(repel);
+      nodeObjects.forEach((node, idx) => {
+        // A. Loading Intro Assembly: lerp from scattered dust position into sphere target
+        const currentTargetPos = node.basePos;
+        node.pos.lerpVectors(node.pos, currentTargetPos, introEase * 0.08 + 0.02);
+
+        // B. Organic Idle Breathing: Amplitude & frequency scale with idleIntensity
+        const breathAmp = (2.2 + Math.sin(idx * 1.3) * 1.2) * idleIntensity;
+        const breathSpeed = (1.5 + (idx % 3) * 0.3) * (1 + (idleIntensity - 1) * 0.3);
+        const breathOffset = Math.sin(elapsedTime * breathSpeed + idx * 0.7) * breathAmp;
+
+        const currentR = sphereRadius + breathOffset;
+        const sphericalPos = sphericalToCartesian(currentR, node.phi, node.theta);
+
+        // C. Cursor Magnetism: Nearby nodes lean toward cursor direction
+        if (isMouseActive && introProgress >= 0.8) {
+          const distToMouseRay = sphericalPos.distanceTo(mouseRay3D);
+          if (distToMouseRay < 130) {
+            const pullForce = ((130 - distToMouseRay) / 130) * 18;
+            const pullDir = mouseRay3D.clone().sub(sphericalPos).normalize();
+            sphericalPos.add(pullDir.multiplyScalar(pullForce));
           }
         }
-      }
 
-      // C. Center Gravity & Position Integration
-      nodeObjects.forEach((node) => {
-        if (node !== draggedNodeRef.current) {
-          const centerPull = node.pos.clone().multiplyScalar(-0.0006);
-          node.velocity.add(centerPull);
-          node.velocity.multiplyScalar(0.92);
-          node.pos.add(node.velocity);
-        }
-
+        // Apply position
+        node.pos.lerp(sphericalPos, 0.1);
         node.group.position.copy(node.pos);
 
+        // Fade in node materials during intro assembly
+        if (introProgress < 1) {
+          node.coreMesh.material.opacity = introEase * 0.95;
+          if (node.haloMesh) node.haloMesh.material.opacity = introEase * 0.5;
+        }
+
         if (node.haloMesh) {
-          node.haloMesh.lookAt(camera.position);
-          node.haloMesh.rotation.z += 0.01;
+          node.haloMesh.rotation.z += 0.01 * (1 + (idleIntensity - 1) * 0.2);
         }
       });
 
-      // ----------------------------------------------------
-      // Animate Action Potential Energy Pulses on Edges
-      // ----------------------------------------------------
-      pulses.forEach((pulse) => {
-        pulse.progress += pulse.speed;
-        if (pulse.progress > 1) {
-          pulse.progress = 0;
+      // Edge opacity fade in
+      if (introProgress < 1) {
+        edgeMat.opacity = introEase * 0.45;
+        starMat.opacity = introEase * 0.65;
+      } else {
+        // Subtle cosmic starfield twinkling
+        starMat.opacity = 0.55 + Math.sin(elapsedTime * 1.5) * 0.12;
+      }
+
+      // Animate flowing shining trail dust particles along edges
+      trails.forEach((trail) => {
+        trail.progress += trail.speed * (1 + (idleIntensity - 1) * 0.2);
+        if (trail.progress > 1) {
+          trail.progress = 0;
         }
-        pulse.mesh.position.lerpVectors(pulse.edge.source.pos, pulse.edge.target.pos, pulse.progress);
-        const pulseScale = 0.8 + Math.sin(pulse.progress * Math.PI) * 0.6;
-        pulse.mesh.scale.set(pulseScale, pulseScale, pulseScale);
+        trail.mesh.position.lerpVectors(trail.edge.source.pos, trail.edge.target.pos, trail.progress);
+        // Subtle transverse cosmic drift
+        trail.mesh.position.y += Math.sin(elapsedTime * 3 + trail.wobbleOffset) * 1.2;
+        // Twinkling scale as it travels across the link
+        const pulseTwinkle = (0.7 + Math.sin(trail.progress * Math.PI) * 0.75) * trail.baseScale;
+        trail.mesh.scale.set(pulseTwinkle, pulseTwinkle, pulseTwinkle);
       });
 
+
       // ----------------------------------------------------
-      // Obsidian Highlighting: Neighbor Excitation & HTML Labels
+      // Obsidian Highlighting: Neighbor Excitation & Screen Labels
       // ----------------------------------------------------
       const activeHoverId = activeHoverIdRef.current;
       const connectedNeighbors = activeHoverId ? adjacency.get(activeHoverId) : null;
@@ -625,30 +828,35 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
         const isFocused = !activeHoverId || isHovered || isNeighbor;
 
         // Visual Scale & Opacity
-        const targetScale = isHovered ? 1.5 : isNeighbor ? 1.2 : activeHoverId ? 0.7 : 1.0;
+        const targetScale = isHovered
+          ? 1.55
+          : isNeighbor
+          ? 1.25
+          : activeHoverId
+          ? 0.75
+          : 1.0 + Math.sin(elapsedTime * 2 + node.phi) * (0.04 * idleIntensity);
         node.group.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.2);
 
         const targetOpacity = isHovered ? 1.0 : isNeighbor ? 0.95 : activeHoverId ? 0.15 : 0.88;
         node.coreMesh.material.opacity = THREE.MathUtils.lerp(node.coreMesh.material.opacity, targetOpacity, 0.15);
 
         if (node.haloMesh) {
-          node.haloMesh.material.opacity = isHovered ? 0.85 : isFocused ? 0.5 : 0.08;
+          node.haloMesh.material.opacity = isHovered ? 0.9 : isFocused ? 0.5 : 0.08;
         }
 
-        // Project Node 3D Position to Screen for HTML Label
-        if (node.labelEl) {
+        // Project 3D position to screen for label (only display once intro is almost assembled)
+        if (node.labelEl && introProgress > 0.6) {
           const worldPos = new THREE.Vector3();
           node.group.getWorldPosition(worldPos);
           const screenPos = worldPos.clone().project(camera);
 
-          if (screenPos.z < 1) {
+          if (screenPos.z < 1 && screenPos.x > -1.1 && screenPos.x < 1.1 && screenPos.y > -1.1 && screenPos.y < 1.1) {
             const screenX = ((screenPos.x + 1) / 2) * rect.width;
-            const screenY = ((-screenPos.y + 1) / 2) * rect.height + (node.isHub ? 18 : 14);
+            const screenY = ((-screenPos.y + 1) / 2) * rect.height + (node.isHub ? 16 : 13);
 
             node.labelEl.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate3d(-50%, 0, 0)`;
             node.labelEl.style.display = "block";
 
-            // Dynamic Label Opacity (Obsidian focus behavior)
             if (isHovered) {
               node.labelEl.style.opacity = "1";
               node.labelEl.style.color = "#ffffff";
@@ -661,7 +869,7 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
               node.labelEl.style.opacity = "0.05";
               node.labelEl.style.color = "#64748b";
             } else {
-              node.labelEl.style.opacity = node.isHub ? "0.85" : "0.38";
+              node.labelEl.style.opacity = node.isHub ? "0.9" : "0.45";
               node.labelEl.style.color = node.isHub ? "#ffffff" : "#cbd5e1";
             }
           } else {
@@ -670,7 +878,7 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
         }
       });
 
-      // Update Edge Lines Positions & Highlighting Colors
+      // Update Edge Positions & Colors
       const posArray = edgeGeo.attributes.position.array;
       const colArray = edgeGeo.attributes.color.array;
 
@@ -699,9 +907,11 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
             colArray[i6 + c * 3 + 1] = 0.06;
             colArray[i6 + c * 3 + 2] = 0.09;
           } else {
-            colArray[i6 + c * 3] = 0.24;
-            colArray[i6 + c * 3 + 1] = 0.30;
-            colArray[i6 + c * 3 + 2] = 0.40;
+            // Idle breathing pulse brightness along filaments
+            const idleBrightness = 0.24 + Math.sin(elapsedTime * 2 + idx) * (0.05 * idleIntensity);
+            colArray[i6 + c * 3] = idleBrightness;
+            colArray[i6 + c * 3 + 1] = idleBrightness * 1.25;
+            colArray[i6 + c * 3 + 2] = idleBrightness * 1.6;
           }
         }
       });
@@ -734,18 +944,18 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
       }
       renderer.dispose();
     };
-  }, [navigate, onHoverNode, playSound]);
+  }, [sphericalToCartesian, navigate, onHoverNode, playSpatialSound, playWarpSound, initAudio]);
 
-  // Reset Camera View
-  const handleResetCamera = () => {
-    const ctrl = controlsRef.current;
-    ctrl.targetLon = 20;
-    ctrl.targetLat = 18;
-    ctrl.targetDistance = 380;
-    ctrl.targetPanX = 0;
-    ctrl.targetPanY = 0;
-    playSound(520, "sine", 0.08);
+  // Reset Look Direction & Zoom
+  const handleResetLook = () => {
+    lastInteractionTimeRef.current = Date.now();
+    const rot = rotationRef.current;
+    rot.targetLon = 0;
+    rot.targetLat = 5;
+    rot.targetFov = 65;
+    playSpatialSound(520, "sine", 0.08, 0, 0.05);
   };
+
 
   return (
     <div
@@ -787,6 +997,24 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
         }}
       />
 
+      {/* Cinematic Warp Flythrough Radial Blur Overlay */}
+      <div
+        ref={warpOverlayRef}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          opacity: 0,
+          background: "radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.25) 50%, rgba(3, 5, 10, 0.8) 100%)",
+          boxShadow: "inset 0 0 100px rgba(0, 240, 255, 0.4)",
+          transition: "opacity 0.45s ease-out",
+          zIndex: 50,
+        }}
+      />
+
       {/* Minimalist Bottom Telemetry & Controls */}
       <div
         style={{
@@ -809,14 +1037,14 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
       >
         <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#a855f7" }} />
-          <span>24 Notes • 5 Clusters</span>
+          <span>24 Notes • 5 Clusters • 360° Celestial Sphere</span>
         </span>
 
         <span style={{ color: "rgba(255, 255, 255, 0.15)" }}>|</span>
 
         <button
-          onClick={handleResetCamera}
-          title="Reset 3D camera to center"
+          onClick={handleResetLook}
+          title="Reset 360° look direction to center"
           style={{
             background: "transparent",
             border: "none",
@@ -849,7 +1077,5 @@ export default function NeuralSphere({ onHoverNode = () => {} }) {
     </div>
   );
 }
-
-
 
 
